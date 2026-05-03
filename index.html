@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DiabetesAI - Predictor de Progresión de Diabetes</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #0a0f1c;
+            --bg2: #111827;
+            --card: #1a2236;
+            --border: #2a3554;
+            --accent: #3b82f6;
+            --accent2: #8b5cf6;
+            --green: #10b981;
+            --red: #ef4444;
+            --orange: #f59e0b;
+            --text: #e2e8f0;
+            --text2: #94a3b8;
+            --radius: 12px;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* HEADER */
+        .header {
+            background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 50%, #1a1040 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 2rem 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .header::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 30% 50%, rgba(59,130,246,0.1) 0%, transparent 60%),
+                        radial-gradient(circle at 70% 50%, rgba(139,92,246,0.08) 0%, transparent 60%);
+        }
+        .header-content { position: relative; z-index: 1; }
+        .header h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.3rem;
+        }
+        .header p { color: var(--text2); font-size: 1rem; }
+        .badge {
+            display: inline-block;
+            background: rgba(16,185,129,0.15);
+            color: var(--green);
+            font-size: 0.75rem;
+            padding: 0.2rem 0.7rem;
+            border-radius: 20px;
+            border: 1px solid rgba(16,185,129,0.3);
+            margin-top: 0.5rem;
+            font-weight: 600;
+        }
+
+        /* LAYOUT */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+        @media (max-width: 900px) {
+            .grid { grid-template-columns: 1fr; }
+        }
+
+        /* CARDS */
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+        }
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .card-title .icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+
+        /* FORM INPUTS */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        .form-label {
+            display: flex;
+            justify-content: between;
+            align-items: baseline;
+            margin-bottom: 0.3rem;
+            font-size: 0.85rem;
+        }
+        .form-label-text {
+            font-weight: 600;
+            color: var(--text);
+            flex: 1;
+        }
+        .form-label-unit {
+            color: var(--text2);
+            font-size: 0.75rem;
+            margin-left: 0.5rem;
+        }
+        .form-label-value {
+            color: var(--accent);
+            font-weight: 700;
+            font-size: 0.9rem;
+            min-width: 50px;
+            text-align: right;
+        }
+        .form-desc {
+            font-size: 0.7rem;
+            color: var(--text2);
+            margin-bottom: 0.3rem;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: var(--border);
+            outline: none;
+            cursor: pointer;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            border: 2px solid #fff;
+        }
+
+        .sex-toggle {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .sex-btn {
+            flex: 1;
+            padding: 0.5rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            background: transparent;
+            color: var(--text2);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 600;
+        }
+        .sex-btn.active {
+            border-color: var(--accent);
+            background: rgba(59,130,246,0.1);
+            color: var(--accent);
+        }
+
+        /* PREDICT BUTTON */
+        .predict-btn {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            border: none;
+            border-radius: var(--radius);
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 0.5rem;
+            transition: all 0.3s;
+            letter-spacing: 0.5px;
+        }
+        .predict-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(59,130,246,0.3);
+        }
+
+        /* RESULT */
+        .result-container {
+            margin-top: 1.5rem;
+            display: none;
+        }
+        .result-container.visible { display: block; }
+        .result-box {
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            text-align: center;
+            border: 2px solid;
+            position: relative;
+            overflow: hidden;
+        }
+        .result-box::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            opacity: 0.05;
+        }
+        .result-controlled {
+            border-color: var(--green);
+            background: rgba(16,185,129,0.08);
+        }
+        .result-uncontrolled {
+            border-color: var(--red);
+            background: rgba(239,68,68,0.08);
+        }
+        .result-icon {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+        }
+        .result-label {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 0.3rem;
+        }
+        .result-controlled .result-label { color: var(--green); }
+        .result-uncontrolled .result-label { color: var(--red); }
+        .result-prob {
+            font-size: 0.9rem;
+            color: var(--text2);
+        }
+        .result-prob strong {
+            font-size: 1.3rem;
+        }
+
+        /* GAUGE */
+        .gauge-container {
+            margin: 1rem auto;
+            width: 200px;
+            height: 110px;
+            position: relative;
+        }
+        .gauge-bg, .gauge-fill {
+            position: absolute;
+            width: 200px;
+            height: 100px;
+            border-radius: 100px 100px 0 0;
+            overflow: hidden;
+        }
+        .gauge-bg { background: var(--border); }
+        .gauge-fill {
+            transform-origin: bottom center;
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .gauge-center {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 140px;
+            height: 70px;
+            background: var(--card);
+            border-radius: 70px 70px 0 0;
+        }
+        .gauge-value {
+            position: absolute;
+            bottom: 8px;
+            width: 100%;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        /* IMPORTANCE CHART */
+        .importance-bar-container {
+            margin-bottom: 0.7rem;
+        }
+        .importance-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            margin-bottom: 0.2rem;
+        }
+        .importance-label span:first-child { font-weight: 600; }
+        .importance-label span:last-child { color: var(--text2); }
+        .importance-bar {
+            height: 8px;
+            background: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .importance-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.6s ease;
+        }
+        .fill-risk { background: linear-gradient(90deg, var(--orange), var(--red)); }
+        .fill-protect { background: linear-gradient(90deg, var(--green), #34d399); }
+
+        /* METRICS */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.8rem;
+        }
+        .metric-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.8rem;
+            text-align: center;
+        }
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+        .metric-label {
+            font-size: 0.75rem;
+            color: var(--text2);
+            margin-top: 0.2rem;
+        }
+
+        /* CONFUSION MATRIX */
+        .cm-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 0.8rem;
+            font-size: 0.8rem;
+        }
+        .cm-table th, .cm-table td {
+            padding: 0.5rem;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+        .cm-table th {
+            background: rgba(255,255,255,0.05);
+            font-weight: 600;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .cm-tp { background: rgba(16,185,129,0.15); color: var(--green); font-weight: 700; }
+        .cm-tn { background: rgba(59,130,246,0.15); color: var(--accent); font-weight: 700; }
+        .cm-fp { background: rgba(239,68,68,0.1); color: var(--red); }
+        .cm-fn { background: rgba(245,158,11,0.1); color: var(--orange); }
+
+        /* FOOTER */
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text2);
+            font-size: 0.8rem;
+            border-top: 1px solid var(--border);
+            margin-top: 2rem;
+        }
+        .footer a { color: var(--accent); text-decoration: none; }
+
+        /* SECTION */
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin: 2rem 0 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* INFO */
+        .info-banner {
+            background: rgba(59,130,246,0.08);
+            border: 1px solid rgba(59,130,246,0.2);
+            border-radius: var(--radius);
+            padding: 1rem 1.2rem;
+            font-size: 0.85rem;
+            color: var(--text2);
+            margin-bottom: 1.5rem;
+            line-height: 1.5;
+        }
+        .disclaimer {
+            background: rgba(245,158,11,0.08);
+            border: 1px solid rgba(245,158,11,0.2);
+            border-radius: var(--radius);
+            padding: 1rem 1.2rem;
+            font-size: 0.8rem;
+            color: var(--orange);
+            margin-top: 1.5rem;
+        }
+
+        .full-width { grid-column: 1 / -1; }
+
+        /* Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .result-container.visible { animation: fadeIn 0.4s ease; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div class="header-content">
+        <h1>DiabetesAI</h1>
+        <p>Predictor de Progresion de Diabetes con Machine Learning</p>
+        <div class="badge">Modelo ML v1.0 &mdash; Open Source &mdash; 92.1% Accuracy</div>
+    </div>
+</div>
+
+<div class="container">
+
+    <div class="info-banner">
+        Aplicacion basada en el <strong>Diabetes Dataset</strong> (scikit-learn). Un modelo de <strong>Regresion Logistica (L2)</strong> entrenado desde cero predice si la progresion de la diabetes a 1 ano sera <em>controlada</em> o <em>descontrolada</em>, usando 10 variables clinicas de base.
+    </div>
+
+    <div class="grid">
+        <!-- LEFT: Input Form -->
+        <div>
+            <div class="card">
+                <div class="card-title">
+                    <div class="icon" style="background:rgba(59,130,246,0.15);color:var(--accent);">&#9881;</div>
+                    Variables Clinicas del Paciente
+                </div>
+
+                <div id="form-container"></div>
+
+                <button class="predict-btn" onclick="predict()">
+                    Predecir Progresion
+                </button>
+
+                <div id="result" class="result-container"></div>
+
+                <div class="disclaimer">
+                    <strong>Aviso:</strong> Esta herramienta es un proyecto educativo y NO sustituye el diagnostico medico profesional. No utilizar para tomar decisiones clinicas reales.
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT: Model Info -->
+        <div>
+            <div class="card" style="margin-bottom: 1.5rem;">
+                <div class="card-title">
+                    <div class="icon" style="background:rgba(245,158,11,0.15);color:var(--orange);">&#9733;</div>
+                    Importancia de Caracteristicas
+                </div>
+                <div id="importance-chart"></div>
+            </div>
+
+            <div class="card" style="margin-bottom: 1.5rem;">
+                <div class="card-title">
+                    <div class="icon" style="background:rgba(16,185,129,0.15);color:var(--green);">&#10004;</div>
+                    Rendimiento del Modelo (Test Set)
+                </div>
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-value" id="m-accuracy">--</div>
+                        <div class="metric-label">Accuracy</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value" id="m-precision">--</div>
+                        <div class="metric-label">Precision</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value" id="m-recall">--</div>
+                        <div class="metric-label">Recall</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value" id="m-f1">--</div>
+                        <div class="metric-label">F1-Score</div>
+                    </div>
+                </div>
+
+                <table class="cm-table">
+                    <tr>
+                        <th></th>
+                        <th>Pred. Controlada</th>
+                        <th>Pred. Descontrolada</th>
+                    </tr>
+                    <tr>
+                        <th>Real Controlada</th>
+                        <td class="cm-tn" id="cm-tn">--</td>
+                        <td class="cm-fp" id="cm-fp">--</td>
+                    </tr>
+                    <tr>
+                        <th>Real Descontrolada</th>
+                        <td class="cm-fn" id="cm-fn">--</td>
+                        <td class="cm-tp" id="cm-tp">--</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="card">
+                <div class="card-title">
+                    <div class="icon" style="background:rgba(139,92,246,0.15);color:var(--accent2);">&#128202;</div>
+                    Detalles del Modelo
+                </div>
+                <div style="font-size:0.85rem; color:var(--text2); line-height:1.8;">
+                    <strong>Tipo:</strong> Regresion Logistica con regularizacion L2<br>
+                    <strong>Dataset:</strong> 442 pacientes, 10 variables<br>
+                    <strong>Split:</strong> 80% train (353) / 20% test (89)<br>
+                    <strong>Target:</strong> Progresion > mediana (193.3) = Descontrolada<br>
+                    <strong>Optimizacion:</strong> Gradient Descent (3000 epochs, lr=0.15)<br>
+                    <strong>Regularizacion:</strong> L2 (lambda=0.05)<br>
+                    <strong>Loss final:</strong> 0.1898<br>
+                    <strong>Implementacion:</strong> Desde cero con NumPy (sin sklearn)
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="footer">
+    <strong>DiabetesAI</strong> &mdash; Proyecto Open Source para prediccion de diabetes con ML<br>
+    Creado con Vibe Coding &bull; Modelo entrenado desde cero con NumPy &bull; MIT License<br>
+    <span style="font-size:0.75rem; margin-top:0.3rem; display:block;">
+        Dataset basado en: Efron, Hastie, Johnstone & Tibshirani (2004). "Least Angle Regression"
+    </span>
+</div>
+
+<script>
+// ============================================================
+// EMBEDDED MODEL WEIGHTS (exported from train_model.py)
+// ============================================================
+const MODEL = {
+    bias: -0.02863090160181568,
+    weights: [-0.14629267295154322, 0.9601430133752322, 2.0080550132364965, 1.0334706155285536, 0.7330993147920797, -0.10980005105745343, -0.7347839195859454, 1.8648468711397101, 1.6655006403571744, 0.6261087670574551],
+    feature_mean: [50.17911445120383, 0.502262443438914, 26.44377822374631, 94.59331860118672, 199.6822111530939, 120.0742467972986, 49.43418261336847, 4.160565133198921, 4.604536344864961, 92.6577078068846],
+    feature_std: [11.3369727443448, 0.49999489132348485, 4.4650481721000475, 12.648363596002364, 36.16572038406527, 30.855652953813173, 13.204832465165826, 1.3038059119881569, 0.5065139674930189, 11.273582953439384],
+    features: [
+        { name: "age", label: "Edad", unit: "anos", desc: "Edad del paciente", min: 19, max: 79, mean: 50.2, step: 1, coeff: -0.1463, importance: 1.5 },
+        { name: "sex", label: "Sexo", unit: "", desc: "Sexo biologico", min: 0, max: 1, mean: 0.5, step: 1, coeff: 0.9601, importance: 9.7 },
+        { name: "bmi", label: "IMC (Indice de Masa Corporal)", unit: "kg/m2", desc: "Indice de Masa Corporal", min: 18, max: 42, mean: 26.4, step: 0.5, coeff: 2.008, importance: 20.3 },
+        { name: "bp", label: "Presion Arterial Media", unit: "mmHg", desc: "Presion arterial media", min: 62, max: 131, mean: 94.6, step: 1, coeff: 1.033, importance: 10.5 },
+        { name: "tc", label: "Colesterol Total (S1)", unit: "mg/dL", desc: "Colesterol total en sangre", min: 100, max: 296, mean: 199.7, step: 1, coeff: 0.733, importance: 7.4 },
+        { name: "ldl", label: "Colesterol LDL (S2)", unit: "mg/dL", desc: "Colesterol LDL (\"malo\")", min: 50, max: 214, mean: 120.1, step: 1, coeff: -0.110, importance: 1.1 },
+        { name: "hdl", label: "Colesterol HDL (S3)", unit: "mg/dL", desc: "Colesterol HDL (\"bueno\")", min: 22, max: 90, mean: 49.4, step: 1, coeff: -0.735, importance: 7.4 },
+        { name: "tch", label: "Ratio TC/HDL (S4)", unit: "ratio", desc: "Ratio colesterol total / HDL", min: 2.0, max: 9.0, mean: 4.2, step: 0.1, coeff: 1.865, importance: 18.9 },
+        { name: "ltg", label: "Log Trigliceridos (S5)", unit: "log(mg/dL)", desc: "Logaritmo de trigliceridos sericos", min: 3.0, max: 6.5, mean: 4.6, step: 0.1, coeff: 1.666, importance: 16.9 },
+        { name: "glu", label: "Glucosa en Ayunas (S6)", unit: "mg/dL", desc: "Nivel de glucosa en ayunas", min: 58, max: 124, mean: 92.7, step: 1, coeff: 0.626, importance: 6.3 }
+    ],
+    test_metrics: { accuracy: 0.9213, precision: 0.9000, recall: 0.9574, f1: 0.9278, cm: { tp: 45, tn: 37, fp: 5, fn: 2 } }
+};
+
+// ============================================================
+// SIGMOID FUNCTION
+// ============================================================
+function sigmoid(z) {
+    if (z >= 0) return 1 / (1 + Math.exp(-z));
+    const ez = Math.exp(z);
+    return ez / (1 + ez);
+}
+
+// ============================================================
+// PREDICTION
+// ============================================================
+function predict() {
+    const values = MODEL.features.map((f, i) => {
+        if (f.name === 'sex') {
+            return document.querySelector('.sex-btn.active')?.dataset.value === '1' ? 1 : 0;
+        }
+        return parseFloat(document.getElementById('slider-' + f.name).value);
+    });
+
+    // Standardize
+    const scaled = values.map((v, i) => (v - MODEL.feature_mean[i]) / MODEL.feature_std[i]);
+
+    // Compute logit
+    let z = MODEL.bias;
+    for (let i = 0; i < scaled.length; i++) {
+        z += MODEL.weights[i] * scaled[i];
+    }
+
+    const prob = sigmoid(z);
+    const isUncontrolled = prob >= 0.5;
+
+    // Show result
+    const container = document.getElementById('result');
+    container.classList.add('visible');
+
+    const probPct = (prob * 100).toFixed(1);
+    const controlPct = ((1 - prob) * 100).toFixed(1);
+
+    container.innerHTML = `
+        <div class="result-box ${isUncontrolled ? 'result-uncontrolled' : 'result-controlled'}">
+            <div class="result-icon">${isUncontrolled ? '&#9888;' : '&#10003;'}</div>
+            <div class="result-label">
+                ${isUncontrolled ? 'DIABETES DESCONTROLADA' : 'DIABETES CONTROLADA'}
+            </div>
+            <div class="result-prob">
+                Probabilidad de progresion grave: <strong>${probPct}%</strong>
+            </div>
+            <div style="margin-top:0.8rem;">
+                <div style="display:flex;justify-content:space-between;font-size:0.75rem;color:var(--text2);margin-bottom:0.3rem;">
+                    <span>Controlada (${controlPct}%)</span>
+                    <span>Descontrolada (${probPct}%)</span>
+                </div>
+                <div style="height:10px;background:var(--border);border-radius:5px;overflow:hidden;">
+                    <div style="height:100%;width:${probPct}%;background:linear-gradient(90deg,var(--green),${prob > 0.4 ? 'var(--orange)' : 'var(--green)'},${prob > 0.6 ? 'var(--red)' : prob > 0.4 ? 'var(--orange)' : 'var(--green)'});border-radius:5px;transition:width 0.6s ease;"></div>
+                </div>
+            </div>
+            <div style="margin-top:1rem;font-size:0.8rem;color:var(--text2);text-align:left;">
+                <strong>Factores clave en esta prediccion:</strong><br>
+                ${getTopFactors(values)}
+            </div>
+        </div>
+    `;
+}
+
+function getTopFactors(values) {
+    // Calculate individual contributions
+    const contributions = MODEL.features.map((f, i) => {
+        const scaled = (values[i] - MODEL.feature_mean[i]) / MODEL.feature_std[i];
+        const contrib = MODEL.weights[i] * scaled;
+        return { label: f.label.split(' (')[0], contrib, value: values[i], unit: f.unit };
+    });
+
+    contributions.sort((a, b) => Math.abs(b.contrib) - Math.abs(a.contrib));
+
+    return contributions.slice(0, 4).map(c => {
+        const dir = c.contrib > 0 ? '&#9650; Riesgo' : '&#9660; Protector';
+        const color = c.contrib > 0 ? 'var(--red)' : 'var(--green)';
+        return `<span style="color:${color};font-weight:600;">${dir}</span>: ${c.label} = ${c.value} ${c.unit}`;
+    }).join('<br>');
+}
+
+// ============================================================
+// BUILD FORM
+// ============================================================
+function buildForm() {
+    const container = document.getElementById('form-container');
+    let html = '';
+
+    MODEL.features.forEach((f, i) => {
+        if (f.name === 'sex') {
+            html += `
+                <div class="form-group">
+                    <div class="form-label">
+                        <span class="form-label-text">${f.label}</span>
+                    </div>
+                    <div class="form-desc">${f.desc}</div>
+                    <div class="sex-toggle">
+                        <button class="sex-btn" data-value="0" onclick="setSex(0)">Mujer (0)</button>
+                        <button class="sex-btn active" data-value="1" onclick="setSex(1)">Hombre (1)</button>
+                    </div>
+                </div>
+            `;
+        } else {
+            const defaultVal = f.name === 'age' ? 50 : Math.round(f.mean / f.step) * f.step;
+            html += `
+                <div class="form-group">
+                    <div class="form-label">
+                        <span class="form-label-text">${f.label}</span>
+                        <span class="form-label-unit">${f.unit}</span>
+                        <span class="form-label-value" id="val-${f.name}">${defaultVal}</span>
+                    </div>
+                    <div class="form-desc">${f.desc}</div>
+                    <input type="range" id="slider-${f.name}" min="${f.min}" max="${f.max}" step="${f.step}" value="${defaultVal}"
+                        oninput="document.getElementById('val-${f.name}').textContent = this.value">
+                </div>
+            `;
+        }
+    });
+
+    container.innerHTML = html;
+}
+
+function setSex(val) {
+    document.querySelectorAll('.sex-btn').forEach(btn => {
+        btn.classList.toggle('active', parseInt(btn.dataset.value) === val);
+    });
+}
+
+// ============================================================
+// BUILD IMPORTANCE CHART
+// ============================================================
+function buildImportanceChart() {
+    const container = document.getElementById('importance-chart');
+    const sorted = [...MODEL.features].sort((a, b) => b.importance - a.importance);
+    const maxImp = sorted[0].importance;
+
+    let html = '';
+    sorted.forEach(f => {
+        const width = (f.importance / maxImp * 100).toFixed(1);
+        const isRisk = f.coeff > 0;
+        html += `
+            <div class="importance-bar-container">
+                <div class="importance-label">
+                    <span>${f.label.split(' (')[0]}</span>
+                    <span>${f.importance.toFixed(1)}% ${isRisk ? '(riesgo)' : '(protector)'}</span>
+                </div>
+                <div class="importance-bar">
+                    <div class="importance-fill ${isRisk ? 'fill-risk' : 'fill-protect'}" style="width: ${width}%"></div>
+                </div>
+            </div>
+        `;
+    });
+
+    container.innerHTML = html;
+}
+
+// ============================================================
+// POPULATE METRICS
+// ============================================================
+function populateMetrics() {
+    const m = MODEL.test_metrics;
+    document.getElementById('m-accuracy').textContent = (m.accuracy * 100).toFixed(1) + '%';
+    document.getElementById('m-precision').textContent = (m.precision * 100).toFixed(1) + '%';
+    document.getElementById('m-recall').textContent = (m.recall * 100).toFixed(1) + '%';
+    document.getElementById('m-f1').textContent = (m.f1 * 100).toFixed(1) + '%';
+    document.getElementById('cm-tp').textContent = m.cm.tp;
+    document.getElementById('cm-tn').textContent = m.cm.tn;
+    document.getElementById('cm-fp').textContent = m.cm.fp;
+    document.getElementById('cm-fn').textContent = m.cm.fn;
+}
+
+// ============================================================
+// INIT
+// ============================================================
+buildForm();
+buildImportanceChart();
+populateMetrics();
+</script>
+
+</body>
+</html>

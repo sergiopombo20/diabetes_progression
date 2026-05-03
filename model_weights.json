@@ -1,0 +1,213 @@
+{
+  "model_type": "Logistic Regression (L2 Regularized)",
+  "bias": -0.02863090160181568,
+  "weights": [
+    -0.14629267295154322,
+    0.9601430133752322,
+    2.0080550132364965,
+    1.0334706155285536,
+    0.7330993147920797,
+    -0.10980005105745343,
+    -0.7347839195859454,
+    1.8648468711397101,
+    1.6655006403571744,
+    0.6261087670574551
+  ],
+  "feature_mean": [
+    50.17911445120383,
+    0.502262443438914,
+    26.44377822374631,
+    94.59331860118672,
+    199.6822111530939,
+    120.0742467972986,
+    49.43418261336847,
+    4.160565133198921,
+    4.604536344864961,
+    92.6577078068846
+  ],
+  "feature_std": [
+    11.3369727443448,
+    0.49999489132348485,
+    4.4650481721000475,
+    12.648363596002364,
+    36.16572038406527,
+    30.855652953813173,
+    13.204832465165826,
+    1.3038059119881569,
+    0.5065139674930189,
+    11.273582953439384
+  ],
+  "feature_names": [
+    "age",
+    "sex",
+    "bmi",
+    "bp",
+    "tc",
+    "ldl",
+    "hdl",
+    "tch",
+    "ltg",
+    "glu"
+  ],
+  "features": [
+    {
+      "name": "age",
+      "label": "Edad",
+      "unit": "a\u00f1os",
+      "description": "Edad del paciente",
+      "coefficient": -0.14629267295154322,
+      "importance_pct": 1.480380282913469,
+      "min": 19.0,
+      "max": 79.0,
+      "mean": 50.17911445120386,
+      "std": 11.3369727343448,
+      "step": 1
+    },
+    {
+      "name": "sex",
+      "label": "Sexo",
+      "unit": "0=F, 1=M",
+      "description": "Sexo biol\u00f3gico",
+      "coefficient": 0.9601430133752322,
+      "importance_pct": 9.71598069199694,
+      "min": 0,
+      "max": 1,
+      "mean": 0.502262443438914,
+      "std": 0.49999488132348485,
+      "step": 1
+    },
+    {
+      "name": "bmi",
+      "label": "IMC",
+      "unit": "kg/m\u00b2",
+      "description": "\u00cdndice de Masa Corporal",
+      "coefficient": 2.0080550132364965,
+      "importance_pct": 20.32012259141305,
+      "min": 18.0,
+      "max": 42.0,
+      "mean": 26.44377822374629,
+      "std": 4.465048162100047,
+      "step": 1
+    },
+    {
+      "name": "bp",
+      "label": "Presi\u00f3n Arterial",
+      "unit": "mmHg",
+      "description": "Presi\u00f3n arterial media",
+      "coefficient": 1.0334706155285536,
+      "importance_pct": 10.458005116262235,
+      "min": 62.0,
+      "max": 131.0,
+      "mean": 94.59331860118684,
+      "std": 12.64836358600236,
+      "step": 1
+    },
+    {
+      "name": "tc",
+      "label": "Colesterol Total",
+      "unit": "mg/dL",
+      "description": "Colesterol total en sangre (S1)",
+      "coefficient": 0.7330993147920797,
+      "importance_pct": 7.418456093115775,
+      "min": 100.0,
+      "max": 296.0,
+      "mean": 199.68221115309396,
+      "std": 36.16572037406526,
+      "step": 1
+    },
+    {
+      "name": "ldl",
+      "label": "Colesterol LDL",
+      "unit": "mg/dL",
+      "description": "Colesterol LDL \"malo\" (S2)",
+      "coefficient": -0.10980005105745343,
+      "importance_pct": 1.1111002852629985,
+      "min": 50.0,
+      "max": 214.0,
+      "mean": 120.07424679729857,
+      "std": 30.855652943813176,
+      "step": 1
+    },
+    {
+      "name": "hdl",
+      "label": "Colesterol HDL",
+      "unit": "mg/dL",
+      "description": "Colesterol HDL \"bueno\" (S3)",
+      "coefficient": -0.7347839195859454,
+      "importance_pct": 7.43550312405058,
+      "min": 22.0,
+      "max": 90.0,
+      "mean": 49.43418261336851,
+      "std": 13.204832455165825,
+      "step": 1
+    },
+    {
+      "name": "tch",
+      "label": "Ratio TC/HDL",
+      "unit": "ratio",
+      "description": "Ratio colesterol total / HDL (S4)",
+      "coefficient": 1.8648468711397101,
+      "importance_pct": 18.870955619236838,
+      "min": 2.0,
+      "max": 9.0,
+      "mean": 4.160565133198921,
+      "std": 1.3038059019881578,
+      "step": 0.1
+    },
+    {
+      "name": "ltg",
+      "label": "Log Triglic\u00e9ridos",
+      "unit": "log(mg/dL)",
+      "description": "Logaritmo de triglic\u00e9ridos s\u00e9ricos (S5)",
+      "coefficient": 1.6655006403571744,
+      "importance_pct": 16.853710164836443,
+      "min": 3.0,
+      "max": 7.0,
+      "mean": 4.604536344864961,
+      "std": 0.5065139574930188,
+      "step": 0.1
+    },
+    {
+      "name": "glu",
+      "label": "Glucosa",
+      "unit": "mg/dL",
+      "description": "Nivel de glucosa en ayunas (S6)",
+      "coefficient": 0.6261087670574551,
+      "importance_pct": 6.33578603091168,
+      "min": 58.0,
+      "max": 124.0,
+      "mean": 92.65770780688463,
+      "std": 11.273582943439383,
+      "step": 1
+    }
+  ],
+  "train_metrics": {
+    "accuracy": 0.9121813031161473,
+    "precision": 0.903954802259887,
+    "recall": 0.9195402298850575,
+    "f1": 0.9116809116809117,
+    "confusion_matrix": {
+      "tp": 160,
+      "tn": 162,
+      "fp": 17,
+      "fn": 14
+    }
+  },
+  "test_metrics": {
+    "accuracy": 0.9213483146067416,
+    "precision": 0.9,
+    "recall": 0.9574468085106383,
+    "f1": 0.9278350515463918,
+    "confusion_matrix": {
+      "tp": 45,
+      "tn": 37,
+      "fp": 5,
+      "fn": 2
+    }
+  },
+  "median_threshold": 193.31687638494697,
+  "n_train": 353,
+  "n_test": 89,
+  "n_total": 442,
+  "training_loss_final": 0.18981417401458542
+}

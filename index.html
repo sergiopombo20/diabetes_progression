@@ -856,7 +856,7 @@ function buildForm() {
                     <div class="form-label">
                         <span class="form-label-text">${f.label}</span>
                     </div>
-                    <div class="form-desc">${f.desc}</div>
+                    <div class="form-desc">${f.description}</div>
                     <div class="sex-toggle">
                         <button class="sex-btn" data-value="0" onclick="setSex(0)">Mujer (0)</button>
                         <button class="sex-btn active" data-value="1" onclick="setSex(1)">Hombre (1)</button>
@@ -872,7 +872,7 @@ function buildForm() {
                         <span class="form-label-unit">${f.unit}</span>
                         <span class="form-label-value" id="val-${f.name}">${defaultVal}</span>
                     </div>
-                    <div class="form-desc">${f.desc}</div>
+                    <div class="form-desc">${f.description}</div>
                     <input type="range" id="slider-${f.name}" min="${f.min}" max="${f.max}" step="${f.step}" value="${defaultVal}"
                         oninput="document.getElementById('val-${f.name}').textContent = this.value">
                 </div>
@@ -894,18 +894,18 @@ function setSex(val) {
 // ============================================================
 function buildImportanceChart() {
     const container = document.getElementById('importance-chart');
-    const sorted = [...MODEL.features].sort((a, b) => b.importance - a.importance);
-    const maxImp = sorted[0].importance;
+    const sorted = [...MODEL.features].sort((a, b) => b.importance_pct - a.importance_pct);
+    const maxImp = sorted[0].importance_pct;
 
     let html = '';
     sorted.forEach(f => {
-        const width = (f.importance / maxImp * 100).toFixed(1);
-        const isRisk = f.coeff > 0;
+        const width = (f.importance_pct / maxImp * 100).toFixed(1);
+        const isRisk = f.coefficient > 0;
         html += `
             <div class="importance-bar-container">
                 <div class="importance-label">
                     <span>${f.label.split(' (')[0]}</span>
-                    <span>${f.importance.toFixed(1)}% ${isRisk ? '(riesgo)' : '(protector)'}</span>
+                    <span>${f.importance_pct.toFixed(1)}% ${isRisk ? '(riesgo)' : '(protector)'}</span>
                 </div>
                 <div class="importance-bar">
                     <div class="importance-fill ${isRisk ? 'fill-risk' : 'fill-protect'}" style="width: ${width}%"></div>

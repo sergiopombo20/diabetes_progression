@@ -1,11 +1,16 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DiabetesAI - Predictor de Progresión de Diabetes</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
         :root {
             --bg: #0a0f1c;
@@ -39,14 +44,20 @@
             position: relative;
             overflow: hidden;
         }
+
         .header::before {
             content: '';
             position: absolute;
             inset: 0;
-            background: radial-gradient(circle at 30% 50%, rgba(59,130,246,0.1) 0%, transparent 60%),
-                        radial-gradient(circle at 70% 50%, rgba(139,92,246,0.08) 0%, transparent 60%);
+            background: radial-gradient(circle at 30% 50%, rgba(59, 130, 246, 0.1) 0%, transparent 60%),
+                radial-gradient(circle at 70% 50%, rgba(139, 92, 246, 0.08) 0%, transparent 60%);
         }
-        .header-content { position: relative; z-index: 1; }
+
+        .header-content {
+            position: relative;
+            z-index: 1;
+        }
+
         .header h1 {
             font-size: 2.2rem;
             font-weight: 700;
@@ -55,15 +66,20 @@
             -webkit-text-fill-color: transparent;
             margin-bottom: 0.3rem;
         }
-        .header p { color: var(--text2); font-size: 1rem; }
+
+        .header p {
+            color: var(--text2);
+            font-size: 1rem;
+        }
+
         .badge {
             display: inline-block;
-            background: rgba(16,185,129,0.15);
+            background: rgba(16, 185, 129, 0.15);
             color: var(--green);
             font-size: 0.75rem;
             padding: 0.2rem 0.7rem;
             border-radius: 20px;
-            border: 1px solid rgba(16,185,129,0.3);
+            border: 1px solid rgba(16, 185, 129, 0.3);
             margin-top: 0.5rem;
             font-weight: 600;
         }
@@ -74,13 +90,17 @@
             margin: 0 auto;
             padding: 2rem 1.5rem;
         }
+
         .grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 2rem;
         }
+
         @media (max-width: 900px) {
-            .grid { grid-template-columns: 1fr; }
+            .grid {
+                grid-template-columns: 1fr;
+            }
         }
 
         /* CARDS */
@@ -90,6 +110,7 @@
             border-radius: var(--radius);
             padding: 1.5rem;
         }
+
         .card-title {
             font-size: 1.1rem;
             font-weight: 600;
@@ -98,6 +119,7 @@
             align-items: center;
             gap: 0.5rem;
         }
+
         .card-title .icon {
             width: 28px;
             height: 28px;
@@ -112,6 +134,7 @@
         .form-group {
             margin-bottom: 1rem;
         }
+
         .form-label {
             display: flex;
             justify-content: between;
@@ -119,16 +142,19 @@
             margin-bottom: 0.3rem;
             font-size: 0.85rem;
         }
+
         .form-label-text {
             font-weight: 600;
             color: var(--text);
             flex: 1;
         }
+
         .form-label-unit {
             color: var(--text2);
             font-size: 0.75rem;
             margin-left: 0.5rem;
         }
+
         .form-label-value {
             color: var(--accent);
             font-weight: 700;
@@ -136,6 +162,7 @@
             min-width: 50px;
             text-align: right;
         }
+
         .form-desc {
             font-size: 0.7rem;
             color: var(--text2);
@@ -151,6 +178,7 @@
             outline: none;
             cursor: pointer;
         }
+
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
             width: 18px;
@@ -159,8 +187,9 @@
             background: var(--accent);
             cursor: pointer;
             border: 2px solid #fff;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
         }
+
         input[type="range"]::-moz-range-thumb {
             width: 18px;
             height: 18px;
@@ -174,6 +203,7 @@
             display: flex;
             gap: 0.5rem;
         }
+
         .sex-btn {
             flex: 1;
             padding: 0.5rem;
@@ -186,9 +216,10 @@
             transition: all 0.2s;
             font-weight: 600;
         }
+
         .sex-btn.active {
             border-color: var(--accent);
-            background: rgba(59,130,246,0.1);
+            background: rgba(59, 130, 246, 0.1);
             color: var(--accent);
         }
 
@@ -207,9 +238,10 @@
             transition: all 0.3s;
             letter-spacing: 0.5px;
         }
+
         .predict-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(59,130,246,0.3);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
         }
 
         /* RESULT */
@@ -217,7 +249,11 @@
             margin-top: 1.5rem;
             display: none;
         }
-        .result-container.visible { display: block; }
+
+        .result-container.visible {
+            display: block;
+        }
+
         .result-box {
             border-radius: var(--radius);
             padding: 1.5rem;
@@ -226,35 +262,48 @@
             position: relative;
             overflow: hidden;
         }
+
         .result-box::before {
             content: '';
             position: absolute;
             inset: 0;
             opacity: 0.05;
         }
+
         .result-controlled {
             border-color: var(--green);
-            background: rgba(16,185,129,0.08);
+            background: rgba(16, 185, 129, 0.08);
         }
+
         .result-uncontrolled {
             border-color: var(--red);
-            background: rgba(239,68,68,0.08);
+            background: rgba(239, 68, 68, 0.08);
         }
+
         .result-icon {
             font-size: 3rem;
             margin-bottom: 0.5rem;
         }
+
         .result-label {
             font-size: 1.4rem;
             font-weight: 700;
             margin-bottom: 0.3rem;
         }
-        .result-controlled .result-label { color: var(--green); }
-        .result-uncontrolled .result-label { color: var(--red); }
+
+        .result-controlled .result-label {
+            color: var(--green);
+        }
+
+        .result-uncontrolled .result-label {
+            color: var(--red);
+        }
+
         .result-prob {
             font-size: 0.9rem;
             color: var(--text2);
         }
+
         .result-prob strong {
             font-size: 1.3rem;
         }
@@ -266,18 +315,25 @@
             height: 110px;
             position: relative;
         }
-        .gauge-bg, .gauge-fill {
+
+        .gauge-bg,
+        .gauge-fill {
             position: absolute;
             width: 200px;
             height: 100px;
             border-radius: 100px 100px 0 0;
             overflow: hidden;
         }
-        .gauge-bg { background: var(--border); }
+
+        .gauge-bg {
+            background: var(--border);
+        }
+
         .gauge-fill {
             transform-origin: bottom center;
             transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
         }
+
         .gauge-center {
             position: absolute;
             bottom: 0;
@@ -288,6 +344,7 @@
             background: var(--card);
             border-radius: 70px 70px 0 0;
         }
+
         .gauge-value {
             position: absolute;
             bottom: 8px;
@@ -301,27 +358,42 @@
         .importance-bar-container {
             margin-bottom: 0.7rem;
         }
+
         .importance-label {
             display: flex;
             justify-content: space-between;
             font-size: 0.8rem;
             margin-bottom: 0.2rem;
         }
-        .importance-label span:first-child { font-weight: 600; }
-        .importance-label span:last-child { color: var(--text2); }
+
+        .importance-label span:first-child {
+            font-weight: 600;
+        }
+
+        .importance-label span:last-child {
+            color: var(--text2);
+        }
+
         .importance-bar {
             height: 8px;
             background: var(--border);
             border-radius: 4px;
             overflow: hidden;
         }
+
         .importance-fill {
             height: 100%;
             border-radius: 4px;
             transition: width 0.6s ease;
         }
-        .fill-risk { background: linear-gradient(90deg, var(--orange), var(--red)); }
-        .fill-protect { background: linear-gradient(90deg, var(--green), #34d399); }
+
+        .fill-risk {
+            background: linear-gradient(90deg, var(--orange), var(--red));
+        }
+
+        .fill-protect {
+            background: linear-gradient(90deg, var(--green), #34d399);
+        }
 
         /* METRICS */
         .metrics-grid {
@@ -329,18 +401,21 @@
             grid-template-columns: 1fr 1fr;
             gap: 0.8rem;
         }
+
         .metric-card {
-            background: rgba(255,255,255,0.03);
+            background: rgba(255, 255, 255, 0.03);
             border: 1px solid var(--border);
             border-radius: 8px;
             padding: 0.8rem;
             text-align: center;
         }
+
         .metric-value {
             font-size: 1.5rem;
             font-weight: 700;
             color: var(--accent);
         }
+
         .metric-label {
             font-size: 0.75rem;
             color: var(--text2);
@@ -354,22 +429,43 @@
             margin-top: 0.8rem;
             font-size: 0.8rem;
         }
-        .cm-table th, .cm-table td {
+
+        .cm-table th,
+        .cm-table td {
             padding: 0.5rem;
             text-align: center;
             border: 1px solid var(--border);
         }
+
         .cm-table th {
-            background: rgba(255,255,255,0.05);
+            background: rgba(255, 255, 255, 0.05);
             font-weight: 600;
             font-size: 0.7rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
-        .cm-tp { background: rgba(16,185,129,0.15); color: var(--green); font-weight: 700; }
-        .cm-tn { background: rgba(59,130,246,0.15); color: var(--accent); font-weight: 700; }
-        .cm-fp { background: rgba(239,68,68,0.1); color: var(--red); }
-        .cm-fn { background: rgba(245,158,11,0.1); color: var(--orange); }
+
+        .cm-tp {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--green);
+            font-weight: 700;
+        }
+
+        .cm-tn {
+            background: rgba(59, 130, 246, 0.15);
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        .cm-fp {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--red);
+        }
+
+        .cm-fn {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--orange);
+        }
 
         /* FOOTER */
         .footer {
@@ -380,7 +476,11 @@
             border-top: 1px solid var(--border);
             margin-top: 2rem;
         }
-        .footer a { color: var(--accent); text-decoration: none; }
+
+        .footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
 
         /* SECTION */
         .section-title {
@@ -394,8 +494,8 @@
 
         /* INFO */
         .info-banner {
-            background: rgba(59,130,246,0.08);
-            border: 1px solid rgba(59,130,246,0.2);
+            background: rgba(59, 130, 246, 0.08);
+            border: 1px solid rgba(59, 130, 246, 0.2);
             border-radius: var(--radius);
             padding: 1rem 1.2rem;
             font-size: 0.85rem;
@@ -403,9 +503,10 @@
             margin-bottom: 1.5rem;
             line-height: 1.5;
         }
+
         .disclaimer {
-            background: rgba(245,158,11,0.08);
-            border: 1px solid rgba(245,158,11,0.2);
+            background: rgba(245, 158, 11, 0.08);
+            border: 1px solid rgba(245, 158, 11, 0.2);
             border-radius: var(--radius);
             padding: 1rem 1.2rem;
             font-size: 0.8rem;
@@ -413,393 +514,409 @@
             margin-top: 1.5rem;
         }
 
-        .full-width { grid-column: 1 / -1; }
+        .full-width {
+            grid-column: 1 / -1;
+        }
 
         /* Animation */
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
-        .result-container.visible { animation: fadeIn 0.4s ease; }
+
+        .result-container.visible {
+            animation: fadeIn 0.4s ease;
+        }
     </style>
 </head>
+
 <body>
 
-<div class="header">
-    <div class="header-content">
-        <h1>DiabetesAI</h1>
-        <p>Predictor de Progresion de Diabetes con Machine Learning</p>
-        <div class="badge">Modelo ML v1.0 &mdash; Open Source &mdash; 74.2% Accuracy</div>
-    </div>
-</div>
-
-<div class="container">
-
-    <div class="info-banner">
-        Aplicacion basada en el <strong>Diabetes Dataset</strong> (scikit-learn). Un modelo de <strong>Regresion Logistica (L2)</strong> entrenado con scikit-learn predice si la progresion de la diabetes a 1 ano sera <em>controlada</em> o <em>descontrolada</em>, usando 10 variables clinicas de base.
+    <div class="header">
+        <div class="header-content">
+            <h1>DiabetesAI</h1>
+            <p>Predictor de Progresion de Diabetes con Machine Learning</p>
+            <div class="badge">Modelo ML v1.0 &mdash; Open Source &mdash; 74.2% Accuracy</div>
+        </div>
     </div>
 
-    <div class="grid">
-        <!-- LEFT: Input Form -->
-        <div>
-            <div class="card">
-                <div class="card-title">
-                    <div class="icon" style="background:rgba(59,130,246,0.15);color:var(--accent);">&#9881;</div>
-                    Variables Clinicas del Paciente
+    <div class="container">
+
+        <div class="info-banner">
+            Aplicacion basada en el <strong>Diabetes Dataset</strong> (scikit-learn). Un modelo de <strong>Regresion
+                Logistica (L2)</strong> entrenado con scikit-learn predice si la progresion de la diabetes a 1 año sera
+            <em>controlada</em> o <em>descontrolada</em>, usando 10 variables clinicas de base.
+        </div>
+
+        <div class="grid">
+            <!-- LEFT: Input Form -->
+            <div>
+                <div class="card">
+                    <div class="card-title">
+                        <div class="icon" style="background:rgba(59,130,246,0.15);color:var(--accent);">&#9881;</div>
+                        Variables Clinicas del Paciente
+                    </div>
+
+                    <div id="form-container"></div>
+
+                    <button class="predict-btn" onclick="predict()">
+                        Predecir Progresion
+                    </button>
+
+                    <div id="result" class="result-container"></div>
+
+                    <div class="disclaimer">
+                        <strong>Aviso:</strong> Esta herramienta es un proyecto educativo y NO sustituye el diagnostico
+                        medico profesional. No utilizar para tomar decisiones clinicas reales.
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT: Model Info -->
+            <div>
+                <div class="card" style="margin-bottom: 1.5rem;">
+                    <div class="card-title">
+                        <div class="icon" style="background:rgba(245,158,11,0.15);color:var(--orange);">&#9733;</div>
+                        Importancia de Caracteristicas
+                    </div>
+                    <div id="importance-chart"></div>
                 </div>
 
-                <div id="form-container"></div>
+                <div class="card" style="margin-bottom: 1.5rem;">
+                    <div class="card-title">
+                        <div class="icon" style="background:rgba(16,185,129,0.15);color:var(--green);">&#10004;</div>
+                        Rendimiento del Modelo (Test Set)
+                    </div>
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <div class="metric-value" id="m-accuracy">--</div>
+                            <div class="metric-label">Accuracy</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="m-precision">--</div>
+                            <div class="metric-label">Precision</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="m-recall">--</div>
+                            <div class="metric-label">Recall</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="m-f1">--</div>
+                            <div class="metric-label">F1-Score</div>
+                        </div>
+                    </div>
 
-                <button class="predict-btn" onclick="predict()">
-                    Predecir Progresion
-                </button>
+                    <table class="cm-table">
+                        <tr>
+                            <th></th>
+                            <th>Pred. Controlada</th>
+                            <th>Pred. Descontrolada</th>
+                        </tr>
+                        <tr>
+                            <th>Real Controlada</th>
+                            <td class="cm-tn" id="cm-tn">--</td>
+                            <td class="cm-fp" id="cm-fp">--</td>
+                        </tr>
+                        <tr>
+                            <th>Real Descontrolada</th>
+                            <td class="cm-fn" id="cm-fn">--</td>
+                            <td class="cm-tp" id="cm-tp">--</td>
+                        </tr>
+                    </table>
+                </div>
 
-                <div id="result" class="result-container"></div>
-
-                <div class="disclaimer">
-                    <strong>Aviso:</strong> Esta herramienta es un proyecto educativo y NO sustituye el diagnostico medico profesional. No utilizar para tomar decisiones clinicas reales.
+                <div class="card">
+                    <div class="card-title">
+                        <div class="icon" style="background:rgba(139,92,246,0.15);color:var(--accent2);">&#128202;</div>
+                        Detalles del Modelo
+                    </div>
+                    <div style="font-size:0.85rem; color:var(--text2); line-height:1.8;">
+                        <strong>Tipo:</strong> Regresion Logistica con regularizacion L2<br>
+                        <strong>Dataset:</strong> 442 pacientes, 10 variables<br>
+                        <strong>Split:</strong> 80% train (353) / 20% test (89)<br>
+                        <strong>Target:</strong> Progresion > mediana (140.5) = Descontrolada<br>
+                        <strong>Optimizacion:</strong> L-BFGS-B (scikit-learn)<br>
+                        <strong>Regularizacion:</strong> L2 (C=1.0)<br>
+                        <strong>Test Accuracy:</strong> 74.2%<br>
+                        <strong>Implementacion:</strong> Scikit-Learn oficial
+                    </div>
                 </div>
             </div>
         </div>
-
-        <!-- RIGHT: Model Info -->
-        <div>
-            <div class="card" style="margin-bottom: 1.5rem;">
-                <div class="card-title">
-                    <div class="icon" style="background:rgba(245,158,11,0.15);color:var(--orange);">&#9733;</div>
-                    Importancia de Caracteristicas
-                </div>
-                <div id="importance-chart"></div>
-            </div>
-
-            <div class="card" style="margin-bottom: 1.5rem;">
-                <div class="card-title">
-                    <div class="icon" style="background:rgba(16,185,129,0.15);color:var(--green);">&#10004;</div>
-                    Rendimiento del Modelo (Test Set)
-                </div>
-                <div class="metrics-grid">
-                    <div class="metric-card">
-                        <div class="metric-value" id="m-accuracy">--</div>
-                        <div class="metric-label">Accuracy</div>
-                    </div>
-                    <div class="metric-card">
-                        <div class="metric-value" id="m-precision">--</div>
-                        <div class="metric-label">Precision</div>
-                    </div>
-                    <div class="metric-card">
-                        <div class="metric-value" id="m-recall">--</div>
-                        <div class="metric-label">Recall</div>
-                    </div>
-                    <div class="metric-card">
-                        <div class="metric-value" id="m-f1">--</div>
-                        <div class="metric-label">F1-Score</div>
-                    </div>
-                </div>
-
-                <table class="cm-table">
-                    <tr>
-                        <th></th>
-                        <th>Pred. Controlada</th>
-                        <th>Pred. Descontrolada</th>
-                    </tr>
-                    <tr>
-                        <th>Real Controlada</th>
-                        <td class="cm-tn" id="cm-tn">--</td>
-                        <td class="cm-fp" id="cm-fp">--</td>
-                    </tr>
-                    <tr>
-                        <th>Real Descontrolada</th>
-                        <td class="cm-fn" id="cm-fn">--</td>
-                        <td class="cm-tp" id="cm-tp">--</td>
-                    </tr>
-                </table>
-            </div>
-
-            <div class="card">
-                <div class="card-title">
-                    <div class="icon" style="background:rgba(139,92,246,0.15);color:var(--accent2);">&#128202;</div>
-                    Detalles del Modelo
-                </div>
-                <div style="font-size:0.85rem; color:var(--text2); line-height:1.8;">
-                    <strong>Tipo:</strong> Regresion Logistica con regularizacion L2<br>
-                    <strong>Dataset:</strong> 442 pacientes, 10 variables<br>
-                    <strong>Split:</strong> 80% train (353) / 20% test (89)<br>
-                    <strong>Target:</strong> Progresion > mediana (140.5) = Descontrolada<br>
-                    <strong>Optimizacion:</strong> L-BFGS-B (scikit-learn)<br>
-                    <strong>Regularizacion:</strong> L2 (C=1.0)<br>
-                    <strong>Test Accuracy:</strong> 74.2%<br>
-                    <strong>Implementacion:</strong> Scikit-Learn oficial
-                </div>
-            </div>
-        </div>
     </div>
-</div>
 
-<div class="footer">
-    <strong>DiabetesAI</strong> &mdash; Proyecto Open Source para prediccion de diabetes con ML<br>
-    Creado con Vibe Coding &bull; Modelo entrenado con Scikit-Learn &bull; MIT License<br>
-    <span style="font-size:0.75rem; margin-top:0.3rem; display:block;">
-        Dataset basado en: Efron, Hastie, Johnstone & Tibshirani (2004). "Least Angle Regression"
-    </span>
-</div>
+    <div class="footer">
+        <strong>DiabetesAI</strong> &mdash; Proyecto Open Source para prediccion de diabetes con ML<br>
+        Creado con Vibe Coding &bull; Modelo entrenado con Scikit-Learn &bull; MIT License<br>
+        <span style="font-size:0.75rem; margin-top:0.3rem; display:block;">
+            Dataset basado en: Efron, Hastie, Johnstone & Tibshirani (2004). "Least Angle Regression"
+        </span>
+    </div>
 
-<script>
-// ============================================================
-// EMBEDDED MODEL WEIGHTS (exported from train_model.py)
-// ============================================================
-const MODEL = {
-  "model_type": "Logistic Regression (Scikit-Learn)",
-  "bias": 0.04828062663346166,
-  "weights": [
-    0.06972137812793401,
-    -0.48584477621425076,
-    0.7379941665340023,
-    0.7192166080419998,
-    -0.5467491493767412,
-    0.17807955848471205,
-    -0.41565502704863855,
-    -0.019726997170768087,
-    0.8631000987128938,
-    -0.11000385244701277
-  ],
-  "feature_mean": [
-    48.14730878186969,
-    0.45892351274787535,
-    26.307365439093505,
-    94.92345609065154,
-    188.56657223796034,
-    114.93654390934842,
-    50.02832861189802,
-    4.0416997167138815,
-    4.628230028328609,
-    90.78186968838527
-  ],
-  "feature_std": [
-    13.263118466417646,
-    0.49830986564087415,
-    4.391312841264408,
-    13.655913555096767,
-    34.61183726971587,
-    30.299734877792282,
-    13.022938654573947,
-    1.2800196751431039,
-    0.5209278983176159,
-    11.514764996944585
-  ],
-  "feature_names": [
-    "age",
-    "sex",
-    "bmi",
-    "bp",
-    "tc",
-    "ldl",
-    "hdl",
-    "tch",
-    "ltg",
-    "glu"
-  ],
-  "features": [
-    {
-      "name": "age",
-      "label": "Edad",
-      "unit": "a\u00f1os",
-      "description": "Edad del paciente",
-      "coefficient": 0.06972137812793401,
-      "importance_pct": 1.6816169214270857,
-      "min": 19.0,
-      "max": 79.0,
-      "mean": 48.51809954751131,
-      "std": 13.094190207980025,
-      "step": 1
-    },
-    {
-      "name": "sex",
-      "label": "Sexo",
-      "unit": "0=M, 1=H",
-      "description": "Sexo biol\u00f3gico",
-      "coefficient": -0.48584477621425076,
-      "importance_pct": 11.718138952584834,
-      "min": 0,
-      "max": 1,
-      "mean": 0.4683257918552036,
-      "std": 0.4989957359922028,
-      "step": 1
-    },
-    {
-      "name": "bmi",
-      "label": "IMC",
-      "unit": "kg/m\u00b2",
-      "description": "\u00cdndice de Masa Corporal",
-      "coefficient": 0.7379941665340023,
-      "importance_pct": 17.799755421943363,
-      "min": 18.0,
-      "max": 43.0,
-      "mean": 26.37579185520362,
-      "std": 4.413120855492464,
-      "step": 1
-    },
-    {
-      "name": "bp",
-      "label": "Presi\u00f3n Arterial",
-      "unit": "mmHg",
-      "description": "Presi\u00f3n arterial media",
-      "coefficient": 0.7192166080419998,
-      "importance_pct": 17.346857602779533,
-      "min": 62.0,
-      "max": 133.0,
-      "mean": 94.64701357466062,
-      "std": 13.815628311857534,
-      "step": 1
-    },
-    {
-      "name": "tc",
-      "label": "Colesterol Total",
-      "unit": "mg/dL",
-      "description": "Colesterol total en sangre (S1)",
-      "coefficient": -0.5467491493767412,
-      "importance_pct": 13.187097645728043,
-      "min": 97.0,
-      "max": 301.0,
-      "mean": 189.14027149321268,
-      "std": 34.568880126921364,
-      "step": 1
-    },
-    {
-      "name": "ldl",
-      "label": "Colesterol LDL",
-      "unit": "mg/dL",
-      "description": "Colesterol LDL \"malo\" (S2)",
-      "coefficient": 0.17807955848471205,
-      "importance_pct": 4.295118756239504,
-      "min": 41.0,
-      "max": 243.0,
-      "mean": 115.43914027149322,
-      "std": 30.378657550243798,
-      "step": 1
-    },
-    {
-      "name": "hdl",
-      "label": "Colesterol HDL",
-      "unit": "mg/dL",
-      "description": "Colesterol HDL \"bueno\" (S3)",
-      "coefficient": -0.41565502704863855,
-      "importance_pct": 10.02522534305986,
-      "min": 22.0,
-      "max": 99.0,
-      "mean": 49.78846153846154,
-      "std": 12.919562419379737,
-      "step": 1
-    },
-    {
-      "name": "tch",
-      "label": "Ratio TC/HDL",
-      "unit": "ratio",
-      "description": "Ratio colesterol total / HDL (S4)",
-      "coefficient": -0.019726997170768087,
-      "importance_pct": 0.4757974260123945,
-      "min": 2.0,
-      "max": 10.0,
-      "mean": 4.070248868778281,
-      "std": 1.288989285051803,
-      "step": 0.1
-    },
-    {
-      "name": "ltg",
-      "label": "Log Triglic\u00e9ridos",
-      "unit": "log(mg/dL)",
-      "description": "Logaritmo de triglic\u00e9ridos s\u00e9ricos (S5)",
-      "coefficient": 0.8631000987128938,
-      "importance_pct": 20.81719796498805,
-      "min": 3.0,
-      "max": 7.0,
-      "mean": 4.641410859728507,
-      "std": 0.5217992869003063,
-      "step": 0.1
-    },
-    {
-      "name": "glu",
-      "label": "Glucosa",
-      "unit": "mg/dL",
-      "description": "Nivel de glucosa en ayunas (S6)",
-      "coefficient": -0.11000385244701277,
-      "importance_pct": 2.6531939652373375,
-      "min": 58.0,
-      "max": 124.0,
-      "mean": 91.26018099547511,
-      "std": 11.48332247173548,
-      "step": 1
-    }
-  ],
-  "train_metrics": {
-    "accuracy": 0.7507082152974505,
-    "precision": 0.7572254335260116,
-    "recall": 0.7401129943502824,
-    "f1": 0.7485714285714286,
-    "cm": {
-      "tp": 131,
-      "tn": 134,
-      "fp": 42,
-      "fn": 46
-    }
-  },
-  "test_metrics": {
-    "accuracy": 0.7415730337078652,
-    "precision": 0.7142857142857143,
-    "recall": 0.7954545454545454,
-    "f1": 0.7526881720430108,
-    "cm": {
-      "tp": 35,
-      "tn": 31,
-      "fp": 14,
-      "fn": 9
-    }
-  },
-  "median_threshold": 140.5,
-  "n_train": 353,
-  "n_test": 89,
-  "n_total": 442
-};
+    <script>
+        // ============================================================
+        // EMBEDDED MODEL WEIGHTS (exported from train_model.py)
+        // ============================================================
+        const MODEL = {
+            "model_type": "Logistic Regression (Scikit-Learn)",
+            "bias": 0.04828062663346166,
+            "weights": [
+                0.06972137812793401,
+                -0.48584477621425076,
+                0.7379941665340023,
+                0.7192166080419998,
+                -0.5467491493767412,
+                0.17807955848471205,
+                -0.41565502704863855,
+                -0.019726997170768087,
+                0.8631000987128938,
+                -0.11000385244701277
+            ],
+            "feature_mean": [
+                48.14730878186969,
+                0.45892351274787535,
+                26.307365439093505,
+                94.92345609065154,
+                188.56657223796034,
+                114.93654390934842,
+                50.02832861189802,
+                4.0416997167138815,
+                4.628230028328609,
+                90.78186968838527
+            ],
+            "feature_std": [
+                13.263118466417646,
+                0.49830986564087415,
+                4.391312841264408,
+                13.655913555096767,
+                34.61183726971587,
+                30.299734877792282,
+                13.022938654573947,
+                1.2800196751431039,
+                0.5209278983176159,
+                11.514764996944585
+            ],
+            "feature_names": [
+                "age",
+                "sex",
+                "bmi",
+                "bp",
+                "tc",
+                "ldl",
+                "hdl",
+                "tch",
+                "ltg",
+                "glu"
+            ],
+            "features": [
+                {
+                    "name": "age",
+                    "label": "Edad",
+                    "unit": "a\u00f1os",
+                    "description": "Edad del paciente",
+                    "coefficient": 0.06972137812793401,
+                    "importance_pct": 1.6816169214270857,
+                    "min": 19.0,
+                    "max": 79.0,
+                    "mean": 48.51809954751131,
+                    "std": 13.094190207980025,
+                    "step": 1
+                },
+                {
+                    "name": "sex",
+                    "label": "Sexo",
+                    "unit": "0=M, 1=H",
+                    "description": "Sexo biol\u00f3gico",
+                    "coefficient": -0.48584477621425076,
+                    "importance_pct": 11.718138952584834,
+                    "min": 0,
+                    "max": 1,
+                    "mean": 0.4683257918552036,
+                    "std": 0.4989957359922028,
+                    "step": 1
+                },
+                {
+                    "name": "bmi",
+                    "label": "IMC",
+                    "unit": "kg/m\u00b2",
+                    "description": "\u00cdndice de Masa Corporal",
+                    "coefficient": 0.7379941665340023,
+                    "importance_pct": 17.799755421943363,
+                    "min": 18.0,
+                    "max": 43.0,
+                    "mean": 26.37579185520362,
+                    "std": 4.413120855492464,
+                    "step": 1
+                },
+                {
+                    "name": "bp",
+                    "label": "Presi\u00f3n Arterial",
+                    "unit": "mmHg",
+                    "description": "Presi\u00f3n arterial media",
+                    "coefficient": 0.7192166080419998,
+                    "importance_pct": 17.346857602779533,
+                    "min": 62.0,
+                    "max": 133.0,
+                    "mean": 94.64701357466062,
+                    "std": 13.815628311857534,
+                    "step": 1
+                },
+                {
+                    "name": "tc",
+                    "label": "Colesterol Total",
+                    "unit": "mg/dL",
+                    "description": "Colesterol total en sangre (S1)",
+                    "coefficient": -0.5467491493767412,
+                    "importance_pct": 13.187097645728043,
+                    "min": 97.0,
+                    "max": 301.0,
+                    "mean": 189.14027149321268,
+                    "std": 34.568880126921364,
+                    "step": 1
+                },
+                {
+                    "name": "ldl",
+                    "label": "Colesterol LDL",
+                    "unit": "mg/dL",
+                    "description": "Colesterol LDL \"malo\" (S2)",
+                    "coefficient": 0.17807955848471205,
+                    "importance_pct": 4.295118756239504,
+                    "min": 41.0,
+                    "max": 243.0,
+                    "mean": 115.43914027149322,
+                    "std": 30.378657550243798,
+                    "step": 1
+                },
+                {
+                    "name": "hdl",
+                    "label": "Colesterol HDL",
+                    "unit": "mg/dL",
+                    "description": "Colesterol HDL \"bueno\" (S3)",
+                    "coefficient": -0.41565502704863855,
+                    "importance_pct": 10.02522534305986,
+                    "min": 22.0,
+                    "max": 99.0,
+                    "mean": 49.78846153846154,
+                    "std": 12.919562419379737,
+                    "step": 1
+                },
+                {
+                    "name": "tch",
+                    "label": "Ratio TC/HDL",
+                    "unit": "ratio",
+                    "description": "Ratio colesterol total / HDL (S4)",
+                    "coefficient": -0.019726997170768087,
+                    "importance_pct": 0.4757974260123945,
+                    "min": 2.0,
+                    "max": 10.0,
+                    "mean": 4.070248868778281,
+                    "std": 1.288989285051803,
+                    "step": 0.1
+                },
+                {
+                    "name": "ltg",
+                    "label": "Log Triglic\u00e9ridos",
+                    "unit": "log(mg/dL)",
+                    "description": "Logaritmo de triglic\u00e9ridos s\u00e9ricos (S5)",
+                    "coefficient": 0.8631000987128938,
+                    "importance_pct": 20.81719796498805,
+                    "min": 3.0,
+                    "max": 7.0,
+                    "mean": 4.641410859728507,
+                    "std": 0.5217992869003063,
+                    "step": 0.1
+                },
+                {
+                    "name": "glu",
+                    "label": "Glucosa",
+                    "unit": "mg/dL",
+                    "description": "Nivel de glucosa en ayunas (S6)",
+                    "coefficient": -0.11000385244701277,
+                    "importance_pct": 2.6531939652373375,
+                    "min": 58.0,
+                    "max": 124.0,
+                    "mean": 91.26018099547511,
+                    "std": 11.48332247173548,
+                    "step": 1
+                }
+            ],
+            "train_metrics": {
+                "accuracy": 0.7507082152974505,
+                "precision": 0.7572254335260116,
+                "recall": 0.7401129943502824,
+                "f1": 0.7485714285714286,
+                "cm": {
+                    "tp": 131,
+                    "tn": 134,
+                    "fp": 42,
+                    "fn": 46
+                }
+            },
+            "test_metrics": {
+                "accuracy": 0.7415730337078652,
+                "precision": 0.7142857142857143,
+                "recall": 0.7954545454545454,
+                "f1": 0.7526881720430108,
+                "cm": {
+                    "tp": 35,
+                    "tn": 31,
+                    "fp": 14,
+                    "fn": 9
+                }
+            },
+            "median_threshold": 140.5,
+            "n_train": 353,
+            "n_test": 89,
+            "n_total": 442
+        };
 
-// ============================================================
-// SIGMOID FUNCTION
-// ============================================================
-function sigmoid(z) {
-    if (z >= 0) return 1 / (1 + Math.exp(-z));
-    const ez = Math.exp(z);
-    return ez / (1 + ez);
-}
-
-// ============================================================
-// PREDICTION
-// ============================================================
-function predict() {
-    const values = MODEL.features.map((f, i) => {
-        if (f.name === 'sex') {
-            return document.querySelector('.sex-btn.active')?.dataset.value === '1' ? 1 : 0;
+        // ============================================================
+        // SIGMOID FUNCTION
+        // ============================================================
+        function sigmoid(z) {
+            if (z >= 0) return 1 / (1 + Math.exp(-z));
+            const ez = Math.exp(z);
+            return ez / (1 + ez);
         }
-        return parseFloat(document.getElementById('slider-' + f.name).value);
-    });
 
-    // Standardize
-    const scaled = values.map((v, i) => (v - MODEL.feature_mean[i]) / MODEL.feature_std[i]);
+        // ============================================================
+        // PREDICTION
+        // ============================================================
+        function predict() {
+            const values = MODEL.features.map((f, i) => {
+                if (f.name === 'sex') {
+                    return document.querySelector('.sex-btn.active')?.dataset.value === '1' ? 1 : 0;
+                }
+                return parseFloat(document.getElementById('slider-' + f.name).value);
+            });
 
-    // Compute logit
-    let z = MODEL.bias;
-    for (let i = 0; i < scaled.length; i++) {
-        z += MODEL.weights[i] * scaled[i];
-    }
+            // Standardize
+            const scaled = values.map((v, i) => (v - MODEL.feature_mean[i]) / MODEL.feature_std[i]);
 
-    const prob = sigmoid(z);
-    const isUncontrolled = prob >= 0.5;
+            // Compute logit
+            let z = MODEL.bias;
+            for (let i = 0; i < scaled.length; i++) {
+                z += MODEL.weights[i] * scaled[i];
+            }
 
-    // Show result
-    const container = document.getElementById('result');
-    container.classList.add('visible');
+            const prob = sigmoid(z);
+            const isUncontrolled = prob >= 0.5;
 
-    const probPct = (prob * 100).toFixed(1);
-    const controlPct = ((1 - prob) * 100).toFixed(1);
+            // Show result
+            const container = document.getElementById('result');
+            container.classList.add('visible');
 
-    container.innerHTML = `
+            const probPct = (prob * 100).toFixed(1);
+            const controlPct = ((1 - prob) * 100).toFixed(1);
+
+            container.innerHTML = `
         <div class="result-box ${isUncontrolled ? 'result-uncontrolled' : 'result-controlled'}">
             <div class="result-icon">${isUncontrolled ? '&#9888;' : '&#10003;'}</div>
             <div class="result-label">
@@ -823,35 +940,35 @@ function predict() {
             </div>
         </div>
     `;
-}
+        }
 
-function getTopFactors(values) {
-    // Calculate individual contributions
-    const contributions = MODEL.features.map((f, i) => {
-        const scaled = (values[i] - MODEL.feature_mean[i]) / MODEL.feature_std[i];
-        const contrib = MODEL.weights[i] * scaled;
-        return { label: f.label.split(' (')[0], contrib, value: values[i], unit: f.unit };
-    });
+        function getTopFactors(values) {
+            // Calculate individual contributions
+            const contributions = MODEL.features.map((f, i) => {
+                const scaled = (values[i] - MODEL.feature_mean[i]) / MODEL.feature_std[i];
+                const contrib = MODEL.weights[i] * scaled;
+                return { label: f.label.split(' (')[0], contrib, value: values[i], unit: f.unit };
+            });
 
-    contributions.sort((a, b) => Math.abs(b.contrib) - Math.abs(a.contrib));
+            contributions.sort((a, b) => Math.abs(b.contrib) - Math.abs(a.contrib));
 
-    return contributions.slice(0, 4).map(c => {
-        const dir = c.contrib > 0 ? '&#9650; Riesgo' : '&#9660; Protector';
-        const color = c.contrib > 0 ? 'var(--red)' : 'var(--green)';
-        return `<span style="color:${color};font-weight:600;">${dir}</span>: ${c.label} = ${c.value} ${c.unit}`;
-    }).join('<br>');
-}
+            return contributions.slice(0, 4).map(c => {
+                const dir = c.contrib > 0 ? '&#9650; Riesgo' : '&#9660; Protector';
+                const color = c.contrib > 0 ? 'var(--red)' : 'var(--green)';
+                return `<span style="color:${color};font-weight:600;">${dir}</span>: ${c.label} = ${c.value} ${c.unit}`;
+            }).join('<br>');
+        }
 
-// ============================================================
-// BUILD FORM
-// ============================================================
-function buildForm() {
-    const container = document.getElementById('form-container');
-    let html = '';
+        // ============================================================
+        // BUILD FORM
+        // ============================================================
+        function buildForm() {
+            const container = document.getElementById('form-container');
+            let html = '';
 
-    MODEL.features.forEach((f, i) => {
-        if (f.name === 'sex') {
-            html += `
+            MODEL.features.forEach((f, i) => {
+                if (f.name === 'sex') {
+                    html += `
                 <div class="form-group">
                     <div class="form-label">
                         <span class="form-label-text">${f.label}</span>
@@ -863,9 +980,9 @@ function buildForm() {
                     </div>
                 </div>
             `;
-        } else {
-            const defaultVal = f.name === 'age' ? 50 : Math.round(f.mean / f.step) * f.step;
-            html += `
+                } else {
+                    const defaultVal = f.name === 'age' ? 50 : Math.round(f.mean / f.step) * f.step;
+                    html += `
                 <div class="form-group">
                     <div class="form-label">
                         <span class="form-label-text">${f.label}</span>
@@ -877,31 +994,31 @@ function buildForm() {
                         oninput="document.getElementById('val-${f.name}').textContent = this.value">
                 </div>
             `;
+                }
+            });
+
+            container.innerHTML = html;
         }
-    });
 
-    container.innerHTML = html;
-}
+        function setSex(val) {
+            document.querySelectorAll('.sex-btn').forEach(btn => {
+                btn.classList.toggle('active', parseInt(btn.dataset.value) === val);
+            });
+        }
 
-function setSex(val) {
-    document.querySelectorAll('.sex-btn').forEach(btn => {
-        btn.classList.toggle('active', parseInt(btn.dataset.value) === val);
-    });
-}
+        // ============================================================
+        // BUILD IMPORTANCE CHART
+        // ============================================================
+        function buildImportanceChart() {
+            const container = document.getElementById('importance-chart');
+            const sorted = [...MODEL.features].sort((a, b) => b.importance_pct - a.importance_pct);
+            const maxImp = sorted[0].importance_pct;
 
-// ============================================================
-// BUILD IMPORTANCE CHART
-// ============================================================
-function buildImportanceChart() {
-    const container = document.getElementById('importance-chart');
-    const sorted = [...MODEL.features].sort((a, b) => b.importance_pct - a.importance_pct);
-    const maxImp = sorted[0].importance_pct;
-
-    let html = '';
-    sorted.forEach(f => {
-        const width = (f.importance_pct / maxImp * 100).toFixed(1);
-        const isRisk = f.coefficient > 0;
-        html += `
+            let html = '';
+            sorted.forEach(f => {
+                const width = (f.importance_pct / maxImp * 100).toFixed(1);
+                const isRisk = f.coefficient > 0;
+                html += `
             <div class="importance-bar-container">
                 <div class="importance-label">
                     <span>${f.label.split(' (')[0]}</span>
@@ -912,33 +1029,34 @@ function buildImportanceChart() {
                 </div>
             </div>
         `;
-    });
+            });
 
-    container.innerHTML = html;
-}
+            container.innerHTML = html;
+        }
 
-// ============================================================
-// POPULATE METRICS
-// ============================================================
-function populateMetrics() {
-    const m = MODEL.test_metrics;
-    document.getElementById('m-accuracy').textContent = (m.accuracy * 100).toFixed(1) + '%';
-    document.getElementById('m-precision').textContent = (m.precision * 100).toFixed(1) + '%';
-    document.getElementById('m-recall').textContent = (m.recall * 100).toFixed(1) + '%';
-    document.getElementById('m-f1').textContent = (m.f1 * 100).toFixed(1) + '%';
-    document.getElementById('cm-tp').textContent = m.cm.tp;
-    document.getElementById('cm-tn').textContent = m.cm.tn;
-    document.getElementById('cm-fp').textContent = m.cm.fp;
-    document.getElementById('cm-fn').textContent = m.cm.fn;
-}
+        // ============================================================
+        // POPULATE METRICS
+        // ============================================================
+        function populateMetrics() {
+            const m = MODEL.test_metrics;
+            document.getElementById('m-accuracy').textContent = (m.accuracy * 100).toFixed(1) + '%';
+            document.getElementById('m-precision').textContent = (m.precision * 100).toFixed(1) + '%';
+            document.getElementById('m-recall').textContent = (m.recall * 100).toFixed(1) + '%';
+            document.getElementById('m-f1').textContent = (m.f1 * 100).toFixed(1) + '%';
+            document.getElementById('cm-tp').textContent = m.cm.tp;
+            document.getElementById('cm-tn').textContent = m.cm.tn;
+            document.getElementById('cm-fp').textContent = m.cm.fp;
+            document.getElementById('cm-fn').textContent = m.cm.fn;
+        }
 
-// ============================================================
-// INIT
-// ============================================================
-buildForm();
-buildImportanceChart();
-populateMetrics();
-</script>
+        // ============================================================
+        // INIT
+        // ============================================================
+        buildForm();
+        buildImportanceChart();
+        populateMetrics();
+    </script>
 
 </body>
+
 </html>

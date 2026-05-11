@@ -429,14 +429,14 @@
     <div class="header-content">
         <h1>DiabetesAI</h1>
         <p>Predictor de Progresion de Diabetes con Machine Learning</p>
-        <div class="badge">Modelo ML v1.0 &mdash; Open Source &mdash; 92.1% Accuracy</div>
+        <div class="badge">Modelo ML v1.0 &mdash; Open Source &mdash; 74.2% Accuracy</div>
     </div>
 </div>
 
 <div class="container">
 
     <div class="info-banner">
-        Aplicacion basada en el <strong>Diabetes Dataset</strong> (scikit-learn). Un modelo de <strong>Regresion Logistica (L2)</strong> entrenado desde cero predice si la progresion de la diabetes a 1 ano sera <em>controlada</em> o <em>descontrolada</em>, usando 10 variables clinicas de base.
+        Aplicacion basada en el <strong>Diabetes Dataset</strong> (scikit-learn). Un modelo de <strong>Regresion Logistica (L2)</strong> entrenado con scikit-learn predice si la progresion de la diabetes a 1 ano sera <em>controlada</em> o <em>descontrolada</em>, usando 10 variables clinicas de base.
     </div>
 
     <div class="grid">
@@ -524,11 +524,11 @@
                     <strong>Tipo:</strong> Regresion Logistica con regularizacion L2<br>
                     <strong>Dataset:</strong> 442 pacientes, 10 variables<br>
                     <strong>Split:</strong> 80% train (353) / 20% test (89)<br>
-                    <strong>Target:</strong> Progresion > mediana (193.3) = Descontrolada<br>
-                    <strong>Optimizacion:</strong> Gradient Descent (3000 epochs, lr=0.15)<br>
-                    <strong>Regularizacion:</strong> L2 (lambda=0.05)<br>
-                    <strong>Loss final:</strong> 0.1898<br>
-                    <strong>Implementacion:</strong> Desde cero con NumPy (sin sklearn)
+                    <strong>Target:</strong> Progresion > mediana (140.5) = Descontrolada<br>
+                    <strong>Optimizacion:</strong> L-BFGS-B (scikit-learn)<br>
+                    <strong>Regularizacion:</strong> L2 (C=1.0)<br>
+                    <strong>Test Accuracy:</strong> 74.2%<br>
+                    <strong>Implementacion:</strong> Scikit-Learn oficial
                 </div>
             </div>
         </div>
@@ -537,7 +537,7 @@
 
 <div class="footer">
     <strong>DiabetesAI</strong> &mdash; Proyecto Open Source para prediccion de diabetes con ML<br>
-    Creado con Vibe Coding &bull; Modelo entrenado desde cero con NumPy &bull; MIT License<br>
+    Creado con Vibe Coding &bull; Modelo entrenado con Scikit-Learn &bull; MIT License<br>
     <span style="font-size:0.75rem; margin-top:0.3rem; display:block;">
         Dataset basado en: Efron, Hastie, Johnstone & Tibshirani (2004). "Least Angle Regression"
     </span>
@@ -548,23 +548,216 @@
 // EMBEDDED MODEL WEIGHTS (exported from train_model.py)
 // ============================================================
 const MODEL = {
-    bias: -0.02863090160181568,
-    weights: [-0.14629267295154322, 0.9601430133752322, 2.0080550132364965, 1.0334706155285536, 0.7330993147920797, -0.10980005105745343, -0.7347839195859454, 1.8648468711397101, 1.6655006403571744, 0.6261087670574551],
-    feature_mean: [50.17911445120383, 0.502262443438914, 26.44377822374631, 94.59331860118672, 199.6822111530939, 120.0742467972986, 49.43418261336847, 4.160565133198921, 4.604536344864961, 92.6577078068846],
-    feature_std: [11.3369727443448, 0.49999489132348485, 4.4650481721000475, 12.648363596002364, 36.16572038406527, 30.855652953813173, 13.204832465165826, 1.3038059119881569, 0.5065139674930189, 11.273582953439384],
-    features: [
-        { name: "age", label: "Edad", unit: "anos", desc: "Edad del paciente", min: 19, max: 79, mean: 50.2, step: 1, coeff: -0.1463, importance: 1.5 },
-        { name: "sex", label: "Sexo", unit: "", desc: "Sexo biologico", min: 0, max: 1, mean: 0.5, step: 1, coeff: 0.9601, importance: 9.7 },
-        { name: "bmi", label: "IMC (Indice de Masa Corporal)", unit: "kg/m2", desc: "Indice de Masa Corporal", min: 18, max: 42, mean: 26.4, step: 0.5, coeff: 2.008, importance: 20.3 },
-        { name: "bp", label: "Presion Arterial Media", unit: "mmHg", desc: "Presion arterial media", min: 62, max: 131, mean: 94.6, step: 1, coeff: 1.033, importance: 10.5 },
-        { name: "tc", label: "Colesterol Total (S1)", unit: "mg/dL", desc: "Colesterol total en sangre", min: 100, max: 296, mean: 199.7, step: 1, coeff: 0.733, importance: 7.4 },
-        { name: "ldl", label: "Colesterol LDL (S2)", unit: "mg/dL", desc: "Colesterol LDL (\"malo\")", min: 50, max: 214, mean: 120.1, step: 1, coeff: -0.110, importance: 1.1 },
-        { name: "hdl", label: "Colesterol HDL (S3)", unit: "mg/dL", desc: "Colesterol HDL (\"bueno\")", min: 22, max: 90, mean: 49.4, step: 1, coeff: -0.735, importance: 7.4 },
-        { name: "tch", label: "Ratio TC/HDL (S4)", unit: "ratio", desc: "Ratio colesterol total / HDL", min: 2.0, max: 9.0, mean: 4.2, step: 0.1, coeff: 1.865, importance: 18.9 },
-        { name: "ltg", label: "Log Trigliceridos (S5)", unit: "log(mg/dL)", desc: "Logaritmo de trigliceridos sericos", min: 3.0, max: 6.5, mean: 4.6, step: 0.1, coeff: 1.666, importance: 16.9 },
-        { name: "glu", label: "Glucosa en Ayunas (S6)", unit: "mg/dL", desc: "Nivel de glucosa en ayunas", min: 58, max: 124, mean: 92.7, step: 1, coeff: 0.626, importance: 6.3 }
-    ],
-    test_metrics: { accuracy: 0.9213, precision: 0.9000, recall: 0.9574, f1: 0.9278, cm: { tp: 45, tn: 37, fp: 5, fn: 2 } }
+  "model_type": "Logistic Regression (Scikit-Learn)",
+  "bias": 0.04828062663346166,
+  "weights": [
+    0.06972137812793401,
+    -0.48584477621425076,
+    0.7379941665340023,
+    0.7192166080419998,
+    -0.5467491493767412,
+    0.17807955848471205,
+    -0.41565502704863855,
+    -0.019726997170768087,
+    0.8631000987128938,
+    -0.11000385244701277
+  ],
+  "feature_mean": [
+    48.14730878186969,
+    0.45892351274787535,
+    26.307365439093505,
+    94.92345609065154,
+    188.56657223796034,
+    114.93654390934842,
+    50.02832861189802,
+    4.0416997167138815,
+    4.628230028328609,
+    90.78186968838527
+  ],
+  "feature_std": [
+    13.263118466417646,
+    0.49830986564087415,
+    4.391312841264408,
+    13.655913555096767,
+    34.61183726971587,
+    30.299734877792282,
+    13.022938654573947,
+    1.2800196751431039,
+    0.5209278983176159,
+    11.514764996944585
+  ],
+  "feature_names": [
+    "age",
+    "sex",
+    "bmi",
+    "bp",
+    "tc",
+    "ldl",
+    "hdl",
+    "tch",
+    "ltg",
+    "glu"
+  ],
+  "features": [
+    {
+      "name": "age",
+      "label": "Edad",
+      "unit": "a\u00f1os",
+      "description": "Edad del paciente",
+      "coefficient": 0.06972137812793401,
+      "importance_pct": 1.6816169214270857,
+      "min": 19.0,
+      "max": 79.0,
+      "mean": 48.51809954751131,
+      "std": 13.094190207980025,
+      "step": 1
+    },
+    {
+      "name": "sex",
+      "label": "Sexo",
+      "unit": "0=M, 1=H",
+      "description": "Sexo biol\u00f3gico",
+      "coefficient": -0.48584477621425076,
+      "importance_pct": 11.718138952584834,
+      "min": 0,
+      "max": 1,
+      "mean": 0.4683257918552036,
+      "std": 0.4989957359922028,
+      "step": 1
+    },
+    {
+      "name": "bmi",
+      "label": "IMC",
+      "unit": "kg/m\u00b2",
+      "description": "\u00cdndice de Masa Corporal",
+      "coefficient": 0.7379941665340023,
+      "importance_pct": 17.799755421943363,
+      "min": 18.0,
+      "max": 43.0,
+      "mean": 26.37579185520362,
+      "std": 4.413120855492464,
+      "step": 1
+    },
+    {
+      "name": "bp",
+      "label": "Presi\u00f3n Arterial",
+      "unit": "mmHg",
+      "description": "Presi\u00f3n arterial media",
+      "coefficient": 0.7192166080419998,
+      "importance_pct": 17.346857602779533,
+      "min": 62.0,
+      "max": 133.0,
+      "mean": 94.64701357466062,
+      "std": 13.815628311857534,
+      "step": 1
+    },
+    {
+      "name": "tc",
+      "label": "Colesterol Total",
+      "unit": "mg/dL",
+      "description": "Colesterol total en sangre (S1)",
+      "coefficient": -0.5467491493767412,
+      "importance_pct": 13.187097645728043,
+      "min": 97.0,
+      "max": 301.0,
+      "mean": 189.14027149321268,
+      "std": 34.568880126921364,
+      "step": 1
+    },
+    {
+      "name": "ldl",
+      "label": "Colesterol LDL",
+      "unit": "mg/dL",
+      "description": "Colesterol LDL \"malo\" (S2)",
+      "coefficient": 0.17807955848471205,
+      "importance_pct": 4.295118756239504,
+      "min": 41.0,
+      "max": 243.0,
+      "mean": 115.43914027149322,
+      "std": 30.378657550243798,
+      "step": 1
+    },
+    {
+      "name": "hdl",
+      "label": "Colesterol HDL",
+      "unit": "mg/dL",
+      "description": "Colesterol HDL \"bueno\" (S3)",
+      "coefficient": -0.41565502704863855,
+      "importance_pct": 10.02522534305986,
+      "min": 22.0,
+      "max": 99.0,
+      "mean": 49.78846153846154,
+      "std": 12.919562419379737,
+      "step": 1
+    },
+    {
+      "name": "tch",
+      "label": "Ratio TC/HDL",
+      "unit": "ratio",
+      "description": "Ratio colesterol total / HDL (S4)",
+      "coefficient": -0.019726997170768087,
+      "importance_pct": 0.4757974260123945,
+      "min": 2.0,
+      "max": 10.0,
+      "mean": 4.070248868778281,
+      "std": 1.288989285051803,
+      "step": 0.1
+    },
+    {
+      "name": "ltg",
+      "label": "Log Triglic\u00e9ridos",
+      "unit": "log(mg/dL)",
+      "description": "Logaritmo de triglic\u00e9ridos s\u00e9ricos (S5)",
+      "coefficient": 0.8631000987128938,
+      "importance_pct": 20.81719796498805,
+      "min": 3.0,
+      "max": 7.0,
+      "mean": 4.641410859728507,
+      "std": 0.5217992869003063,
+      "step": 0.1
+    },
+    {
+      "name": "glu",
+      "label": "Glucosa",
+      "unit": "mg/dL",
+      "description": "Nivel de glucosa en ayunas (S6)",
+      "coefficient": -0.11000385244701277,
+      "importance_pct": 2.6531939652373375,
+      "min": 58.0,
+      "max": 124.0,
+      "mean": 91.26018099547511,
+      "std": 11.48332247173548,
+      "step": 1
+    }
+  ],
+  "train_metrics": {
+    "accuracy": 0.7507082152974505,
+    "precision": 0.7572254335260116,
+    "recall": 0.7401129943502824,
+    "f1": 0.7485714285714286,
+    "cm": {
+      "tp": 131,
+      "tn": 134,
+      "fp": 42,
+      "fn": 46
+    }
+  },
+  "test_metrics": {
+    "accuracy": 0.7415730337078652,
+    "precision": 0.7142857142857143,
+    "recall": 0.7954545454545454,
+    "f1": 0.7526881720430108,
+    "cm": {
+      "tp": 35,
+      "tn": 31,
+      "fp": 14,
+      "fn": 9
+    }
+  },
+  "median_threshold": 140.5,
+  "n_train": 353,
+  "n_test": 89,
+  "n_total": 442
 };
 
 // ============================================================

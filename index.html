@@ -606,6 +606,29 @@
             animation: fadeIn 0.4s ease;
         }
 
+        /* ADVISOR */
+        .advisor-card {
+            margin-top: 0.9rem;
+            padding: 1rem;
+            border-radius: 12px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+            border: 1px solid var(--border);
+        }
+
+        .advisor-title {
+            font-weight: 700;
+            margin-bottom: 0.6rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .advisor-text {
+            color: var(--text2);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
         @media print {
             body {
                 background: #fff;
@@ -689,6 +712,11 @@
                     </div>
 
                     <div id="result" class="result-container"></div>
+
+                    <div id="advisor" class="advisor-card" style="display:none;">
+                        <div class="advisor-title">💬 Recomendaciones</div>
+                        <div id="advisor-text" class="advisor-text"></div>
+                    </div>
 
                     <div class="disclaimer">
                         <strong>Aviso:</strong> Esta herramienta es un proyecto educativo y NO sustituye el diagnostico
@@ -1087,6 +1115,9 @@
             </div>
         </div>
     `;
+
+            // show lightweight advisor
+            try { showAdvisor(payload); } catch (e) { console.warn('Advisor error', e); }
         }
 
         function getTopFactors(values) {
@@ -1104,6 +1135,161 @@
                 const color = c.contrib > 0 ? 'var(--red)' : 'var(--green)';
                 return `<span style="color:${color};font-weight:600;">${dir}</span>: ${c.label} = ${c.value} ${c.unit}`;
             }).join('<br>');
+        }
+
+        // ==================== ADVISOR (Rule-based lightweight) ====================
+        function generateAdvisor(payload) {
+            // Build advisor using explicit rules and thresholds provided by the user
+            const vals = payload.values;
+            const get = name => {
+                const idx = MODEL.feature_names.indexOf(name);
+                return idx >= 0 ? vals[idx] : null;
+            };
+
+            const sex = get('sex'); // 0=Mujer, 1=Hombre per dataset
+            const ltg = get('ltg');
+            const hdl = get('hdl');
+            const ldl = get('ldl');
+            const tc = get('tc');
+            const bmi = get('bmi');
+            const age = get('age');
+            const bp = get('bp');
+            const glu = get('glu');
+            const tch = get('tch');
+
+            const adv = [];
+            const prob = payload.probability; // prob of DESCONTROLADA
+            const controlPct = (1 - prob) * 100;
+
+            // Top single risk contributor (for short suggestions)
+            const contributions = MODEL.features.map((f, i) => {
+                const scaled = (vals[i] - MODEL.feature_mean[i]) / MODEL.feature_std[i];
+                return { name: f.name, label: f.label, contrib: MODEL.weights[i] * scaled, value: vals[i], unit: f.unit };
+            }).sort((a, b) => Math.abs(b.contrib) - Math.abs(a.contrib));
+
+            const topRisk = contributions.find(c => c.contrib > 0) || contributions[0];
+
+            // Overall tone
+            if (controlPct > 60) {
+                adv.push(`<strong>¡Buen resultado!</strong> Predicción: control probable (${controlPct.toFixed(1)}%). Felicitaciones por mantener hábitos que protegen.`);
+                // Optionally give a short maintenance tip from top protective factor
+                if (topRisk && topRisk.contrib <= 0) {
+                    adv.push('Sugerencia para mantenerlo: continúe con su rutina actual y controles periódicos.');
+                }
+                adv.push('Estas recomendaciones son orientativas y no sustituyen una consulta médica.');
+                return adv.join('<br>');
+            }
+
+            if (controlPct >= 50 && controlPct <= 60) {
+                adv.push(`<strong>Resultado aceptable.</strong> Predicción: ${controlPct.toFixed(1)}% control. Bien, pero no se relaje.`);
+                // Provide one concrete correction based on top risk contributor
+                if (topRisk) {
+                    switch (topRisk.name) {
+                        case 'bmi':
+                            adv.push(`- IMC: ${topRisk.value} ${topRisk.unit} — considerar pérdida moderada de peso (5-10%) mediante dieta y ejercicio.`);
+                            break;
+                        case 'ltg':
+                            adv.push(`- Triglicéridos (log): ${topRisk.value} — reducir azúcares refinados, fructosa y alcohol.`);
+                            break;
+                        case 'bp':
+                            adv.push(`- Presión arterial: ${topRisk.value} ${topRisk.unit} — reducir sal y aumentar actividad física.`);
+                            break;
+                        case 'glu':
+                            adv.push(`- Glucosa en ayunas: ${topRisk.value} ${topRisk.unit} — vigilar carga glucémica de las comidas.`);
+                            break;
+                        case 'hdl':
+                            adv.push(`- HDL: ${topRisk.value} ${topRisk.unit} — actividad aeróbica y grasas saludables pueden ayudar.`);
+                            break;
+                        case 'ldl':
+                            adv.push(`- LDL: ${topRisk.value} ${topRisk.unit} — reducir grasas saturadas y aumentar fibra soluble.`);
+                            break;
+                        case 'tc':
+                            adv.push(`- Colesterol total: ${topRisk.value} ${topRisk.unit} — seguimiento con profesional para evaluar perfil lipídico.`);
+                            break;
+                        case 'tch':
+                            adv.push(`- Ratio TC/HDL: ${topRisk.value} — mantener dieta y actividad para mejorar el ratio.`);
+                            break;
+                        default:
+                            adv.push(`- Revisa ${topRisk.label}: ${topRisk.value} ${topRisk.unit}.`);
+                    }
+                }
+                adv.push('Consulte a su médico si tiene dudas.');
+                return adv.join('<br>');
+            }
+
+            // If we get here, probability of DESCONTROLADA is >50% (malo)
+            adv.push('<strong>Riesgo de progresión descontrolada detectado.</strong> A continuación, observaciones y recomendaciones:');
+
+            // 1. Perfil lipídico
+            if (ltg != null && ltg > 4.6) {
+                adv.push('- Triglicéridos (log) > 4.6: Nivel de triglicéridos elevado. Se recomienda reducir el consumo de azúcares refinados, fructosa y alcohol, ya que impactan en la síntesis de grasas.');
+            }
+
+            if (hdl != null) {
+                const hdlThreshold = (sex === 1) ? 40 : 50; // 1=Hombre
+                if (hdl < hdlThreshold) {
+                    adv.push(`- Colesterol HDL bajo (${hdl} ${MODEL.features.find(f=>f.name==='hdl').unit}). El ejercicio aeróbico regular y grasas saludables (aceite de oliva, aguacate) pueden ayudar a elevarlo.`);
+                }
+            }
+
+            if (ldl != null && ldl > 130) {
+                adv.push('- Colesterol LDL > 130: LDL elevado. Limitar grasas saturadas y aumentar fibra soluble (avena, legumbres).');
+            }
+
+            if (tc != null && tc > 200) {
+                adv.push('- Colesterol total > 200: Colesterol total por encima del rango deseable. Hacer seguimiento con su médico para evaluar el perfil lipídico completo.');
+            }
+
+            // 2. Composición corporal y edad
+            if (bmi != null && bmi > 30) {
+                adv.push('- IMC > 30: Obesidad detectada. El exceso de tejido adiposo promueve inflamación y resistencia a la insulina.');
+            } else if (bmi != null && bmi > 25) {
+                adv.push('- IMC > 25: Sobrepeso detectado. Una reducción moderada del 5-10% del peso corporal puede mejorar sens. a la insulina.');
+            }
+
+            if (age != null && age > 60) {
+                adv.push('- Edad > 60: Mantener masa muscular con ejercicios de fuerza suaves para mejorar control glucémico.');
+            }
+
+            // 3. Presión arterial y glucosa
+            if (bp != null && bp > 130) {
+                adv.push('- Presión arterial > 130: Tensión arterial elevada. Reducir sodio (<2g/día) y aumentar potasio (frutas y verduras).');
+            }
+
+            if (glu != null && glu > 125) {
+                adv.push('- Glucosa en ayunas > 125: Nivel compatible con diagnóstico clínico. Control riguroso de carbohidratos y medicación supervisada.');
+            } else if (glu != null && glu > 100) {
+                adv.push('- Glucosa en ayunas > 100: Prediabetes/hiperglucemia. Monitorizar carga glucémica de las comidas.');
+            }
+
+            // 4. Ratios y combinaciones
+            if (tch != null && tch > 4.5) {
+                adv.push('- Ratio TC/HDL > 4.5: Ratio alto; mayor riesgo cardiovascular independientemente de valores individuales.');
+            }
+
+            if (bmi != null && bmi > 25 && glu != null && glu > 100) {
+                adv.push('- Combinación: IMC alto + glucosa alta — riesgo potenciado de complicaciones vasculares.');
+            }
+
+            if (bp != null && bp > 130 && age != null && age > 60) {
+                adv.push('- Combinación: Presión arterial alta + edad avanzada — riesgo aumentado de eventos hipertensivos. Monitorización domiciliaria recomendada.');
+            }
+
+            // If no specific rules matched, still provide top contributors
+            if (adv.length === 1 && topRisk) {
+                adv.push(`- Factores principales identificados: ${topRisk.label} = ${topRisk.value} ${topRisk.unit}. Revise ese parámetro con su médico.`);
+            }
+
+            adv.push('Consulte con su profesional sanitario para obtener diagnóstico y tratamiento apropiado. Estas recomendaciones son orientativas.');
+
+            return adv.join('<br>');
+        }
+
+        function showAdvisor(payload) {
+            const el = document.getElementById('advisor');
+            const txt = document.getElementById('advisor-text');
+            txt.innerHTML = generateAdvisor(payload);
+            el.style.display = 'block';
         }
 
         function getActiveSexLabel() {

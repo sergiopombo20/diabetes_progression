@@ -1074,13 +1074,9 @@
                 ${isUncontrolled ? 'DIABETES DESCONTROLADA' : 'DIABETES CONTROLADA'}
             </div>
             <div class="result-prob">
-                Probabilidad de progresion grave: <strong>${probPct}%</strong>
+                Probabilidad ${isUncontrolled ? 'descontrolada' : 'controlada'}: <strong>${isUncontrolled ? probPct : controlPct}%</strong>
             </div>
             <div style="margin-top:0.8rem;">
-                <div style="display:flex;justify-content:space-between;font-size:0.75rem;color:var(--text2);margin-bottom:0.3rem;">
-                    <span>Controlada (${controlPct}%)</span>
-                    <span>Descontrolada (${probPct}%)</span>
-                </div>
                 <div style="height:10px;background:var(--border);border-radius:5px;overflow:hidden;">
                     <div style="height:100%;width:${probPct}%;background:linear-gradient(90deg,var(--green),${prob > 0.4 ? 'var(--orange)' : 'var(--green)'},${prob > 0.6 ? 'var(--red)' : prob > 0.4 ? 'var(--orange)' : 'var(--green)'});border-radius:5px;transition:width 0.6s ease;"></div>
                 </div>
@@ -1301,8 +1297,7 @@
                             <div class="panel">
                                 <h2 style="margin:0 0 10px;font-size:18px;">Resultado</h2>
                                 <p style="margin:0 0 6px;"><strong>Estado:</strong> ${current.label}</p>
-                                <p style="margin:0 0 6px;"><strong>Probabilidad descontrolada:</strong> ${current.probPct}%</p>
-                                <p style="margin:0;"><strong>Probabilidad controlada:</strong> ${current.controlPct}%</p>
+                                <p style="margin:0;"><strong>Probabilidad ${current.isUncontrolled ? 'descontrolada' : 'controlada'}:</strong> ${current.isUncontrolled ? current.probPct : current.controlPct}%</p>
                             </div>
 
                             <div class="panel">

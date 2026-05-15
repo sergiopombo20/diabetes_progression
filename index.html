@@ -244,6 +244,45 @@
             box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
         }
 
+        .actions-row {
+            display: grid;
+            grid-template-columns: 1.2fr 0.9fr 0.9fr;
+            gap: 0.65rem;
+            margin-top: 0.5rem;
+        }
+
+        .export-btn {
+            width: 100%;
+            padding: 0.85rem 0.95rem;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text);
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .export-btn:hover {
+            transform: translateY(-1px);
+            border-color: rgba(59, 130, 246, 0.55);
+            background: rgba(59, 130, 246, 0.08);
+        }
+
+        .export-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .export-btn.csv {
+            color: #7dd3fc;
+        }
+
+        .export-btn.pdf {
+            color: #fcd34d;
+        }
+
         /* RESULT */
         .result-container {
             margin-top: 1.5rem;
@@ -357,6 +396,38 @@
         /* IMPORTANCE CHART */
         .importance-bar-container {
             margin-bottom: 0.7rem;
+        }
+
+        .importance-section {
+            margin-top: 0.9rem;
+        }
+
+        .importance-section:first-child {
+            margin-top: 0;
+        }
+
+        .importance-section-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-bottom: 0.7rem;
+        }
+
+        .importance-section-title span:last-child {
+            font-size: 0.72rem;
+            color: var(--text2);
+            font-weight: 600;
+        }
+
+        .importance-section-title.risk {
+            color: var(--red);
+        }
+
+        .importance-section-title.protect {
+            color: var(--green);
         }
 
         .importance-label {
@@ -534,6 +605,45 @@
         .result-container.visible {
             animation: fadeIn 0.4s ease;
         }
+
+        @media print {
+            body {
+                background: #fff;
+                color: #111827;
+            }
+
+            .header,
+            .info-banner,
+            .grid > :first-child,
+            .footer {
+                display: none !important;
+            }
+
+            .container {
+                max-width: 100%;
+                padding: 0;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .card {
+                border: none;
+                background: #fff;
+                color: #111827;
+                page-break-inside: avoid;
+                box-shadow: none;
+            }
+
+            .print-only {
+                display: block !important;
+            }
+        }
+
+        .print-only {
+            display: none;
+        }
     </style>
 </head>
 
@@ -566,9 +676,17 @@
 
                     <div id="form-container"></div>
 
-                    <button class="predict-btn" onclick="predict()">
-                        Predecir Progresion
-                    </button>
+                    <div class="actions-row">
+                        <button class="predict-btn" onclick="predict()">
+                            Predecir Progresion
+                        </button>
+                        <button class="export-btn csv" onclick="exportCSV()">
+                            Exportar CSV
+                        </button>
+                        <button class="export-btn pdf" onclick="exportPDF()">
+                            Exportar PDF
+                        </button>
+                    </div>
 
                     <div id="result" class="result-container"></div>
 
@@ -659,6 +777,8 @@
             Dataset basado en Efron, Hastie, Johnstone & Tibshirani (2004). "Least Angle Regression"
         </span>
     </div>
+
+    <div id="print-template" class="print-only"></div>
 
     <script>
         // ============================================================
@@ -886,21 +1006,26 @@
             return ez / (1 + ez);
         }
 
-        // ============================================================
-        // PREDICTION
-        // ============================================================
-        function predict() {
-            const values = MODEL.features.map((f, i) => {
-                if (f.name === 'sex') {
-                    return document.querySelector('.sex-btn.active')?.dataset.value === '1' ? 1 : 0;
-                }
-                return parseFloat(document.getElementById('slider-' + f.name).value);
-            });
+        let lastPrediction = null;
 
-            // Standardize
+        function getCurrentInputs() {
+            return MODEL.features.map((f, i) => {
+                if (f.name === 'sex') {
+                    const value = document.querySelector('.sex-btn.active')?.dataset.value === '1' ? 1 : 0;
+                    return { feature: f, value };
+                }
+
+                const input = document.getElementById('slider-' + f.name);
+                const value = input ? parseFloat(input.value) : f.mean;
+                return { feature: f, value };
+            });
+        }
+
+        function buildPredictionPayload() {
+            const inputs = getCurrentInputs();
+            const values = inputs.map(item => item.value);
             const scaled = values.map((v, i) => (v - MODEL.feature_mean[i]) / MODEL.feature_std[i]);
 
-            // Compute logit
             let z = MODEL.bias;
             for (let i = 0; i < scaled.length; i++) {
                 z += MODEL.weights[i] * scaled[i];
@@ -909,12 +1034,38 @@
             const prob = sigmoid(z);
             const isUncontrolled = prob >= 0.5;
 
+            return {
+                inputs,
+                values,
+                scaled,
+                probability: prob,
+                controlProbability: 1 - prob,
+                isUncontrolled,
+                label: isUncontrolled ? 'DIABETES DESCONTROLADA' : 'DIABETES CONTROLADA',
+                probPct: (prob * 100).toFixed(1),
+                controlPct: ((1 - prob) * 100).toFixed(1),
+                factors: getTopFactors(values),
+                generatedAt: new Date()
+            };
+        }
+
+        // ============================================================
+        // PREDICTION
+        // ============================================================
+        function predict() {
+            const payload = buildPredictionPayload();
+            const values = payload.values;
+            const prob = payload.probability;
+            const isUncontrolled = payload.isUncontrolled;
+
             // Show result
             const container = document.getElementById('result');
             container.classList.add('visible');
 
-            const probPct = (prob * 100).toFixed(1);
-            const controlPct = ((1 - prob) * 100).toFixed(1);
+            const probPct = payload.probPct;
+            const controlPct = payload.controlPct;
+
+            lastPrediction = payload;
 
             container.innerHTML = `
         <div class="result-box ${isUncontrolled ? 'result-uncontrolled' : 'result-controlled'}">
@@ -936,7 +1087,7 @@
             </div>
             <div style="margin-top:1rem;font-size:0.8rem;color:var(--text2);text-align:left;">
                 <strong>Factores clave en esta prediccion:</strong><br>
-                ${getTopFactors(values)}
+                ${payload.factors}
             </div>
         </div>
     `;
@@ -957,6 +1108,247 @@
                 const color = c.contrib > 0 ? 'var(--red)' : 'var(--green)';
                 return `<span style="color:${color};font-weight:600;">${dir}</span>: ${c.label} = ${c.value} ${c.unit}`;
             }).join('<br>');
+        }
+
+        function getActiveSexLabel() {
+            return document.querySelector('.sex-btn.active')?.dataset.value === '1' ? 'Hombre (1)' : 'Mujer (0)';
+        }
+
+        function getExportRows() {
+            const current = lastPrediction || buildPredictionPayload();
+
+            return [
+                ['Campo', 'Valor'].map(csvEscape).join(','),
+                ['Fecha', current.generatedAt.toLocaleString('es-ES')].map(csvEscape).join(','),
+                ['Resultado', current.label].map(csvEscape).join(','),
+                ['Probabilidad descontrolada', current.probPct + '%'].map(csvEscape).join(','),
+                ['Probabilidad controlada', current.controlPct + '%'].map(csvEscape).join(','),
+                ['Sexo', getActiveSexLabel()].map(csvEscape).join(','),
+                ...current.inputs.map(item => [item.feature.label, formatFeatureValue(item.feature, item.value)].map(csvEscape).join(','))
+            ];
+        }
+
+        function csvEscape(value) {
+            const text = String(value ?? '');
+            return '"' + text.replace(/"/g, '""') + '"';
+        }
+
+        function formatFeatureValue(feature, value) {
+            if (feature.name === 'sex') {
+                return value === 1 ? 'Hombre (1)' : 'Mujer (0)';
+            }
+            return `${value} ${feature.unit}`;
+        }
+
+        function exportCSV() {
+            const current = lastPrediction || buildPredictionPayload();
+            const headers = ['Campo', 'Valor'];
+            const rows = [
+                headers,
+                ['Fecha', current.generatedAt.toLocaleString('es-ES')],
+                ['Resultado', current.label],
+                ['Probabilidad descontrolada', current.probPct + '%'],
+                ['Probabilidad controlada', current.controlPct + '%'],
+                ['Sexo', getActiveSexLabel()],
+                ...current.inputs.map(item => [item.feature.label, formatFeatureValue(item.feature, item.value)])
+            ];
+
+            const csv = rows.map(row => row.map(csvEscape).join(',')).join('\n');
+            const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `diabetesai_resultado_${new Date().toISOString().slice(0, 10)}.csv`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            URL.revokeObjectURL(url);
+        }
+
+        function exportPDF() {
+            const current = lastPrediction || buildPredictionPayload();
+            const reportHtml = `
+                <!DOCTYPE html>
+                <html lang="es">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>DiabetesAI - Resumen PDF</title>
+                    <style>
+                        :root {
+                            color-scheme: light;
+                        }
+
+                        * {
+                            box-sizing: border-box;
+                        }
+
+                        body {
+                            margin: 0;
+                            font-family: Segoe UI, Arial, sans-serif;
+                            background: #f3f4f6;
+                            color: #111827;
+                        }
+
+                        .page {
+                            max-width: 920px;
+                            margin: 24px auto;
+                            padding: 24px;
+                        }
+
+                        .toolbar {
+                            display: flex;
+                            gap: 12px;
+                            flex-wrap: wrap;
+                            margin-bottom: 18px;
+                        }
+
+                        .toolbar button {
+                            border: 0;
+                            border-radius: 10px;
+                            padding: 12px 16px;
+                            font-weight: 700;
+                            cursor: pointer;
+                        }
+
+                        .primary {
+                            background: #2563eb;
+                            color: #fff;
+                        }
+
+                        .secondary {
+                            background: #e5e7eb;
+                            color: #111827;
+                        }
+
+                        .report {
+                            background: #fff;
+                            border-radius: 16px;
+                            padding: 24px;
+                            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+                        }
+
+                        h1 {
+                            margin: 0 0 8px;
+                            font-size: 26px;
+                        }
+
+                        .muted {
+                            color: #4b5563;
+                            margin: 0 0 18px;
+                        }
+
+                        .panel {
+                            border: 1px solid #d1d5db;
+                            border-radius: 14px;
+                            padding: 16px;
+                            margin-bottom: 16px;
+                        }
+
+                        table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            font-size: 14px;
+                        }
+
+                        th, td {
+                            text-align: left;
+                            border-bottom: 1px solid #e5e7eb;
+                            padding: 8px 6px;
+                            vertical-align: top;
+                        }
+
+                        .note {
+                            color: #6b7280;
+                            font-size: 13px;
+                            margin-top: 12px;
+                        }
+
+                        @media print {
+                            body {
+                                background: #fff;
+                            }
+
+                            .toolbar {
+                                display: none;
+                            }
+
+                            .page {
+                                max-width: none;
+                                margin: 0;
+                                padding: 0;
+                            }
+
+                            .report {
+                                box-shadow: none;
+                                border-radius: 0;
+                                padding: 0;
+                            }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="page">
+                        <div class="toolbar">
+                            <button class="primary" onclick="window.print()">Guardar como PDF</button>
+                            <button class="secondary" onclick="window.close()">Cerrar pestaña</button>
+                        </div>
+
+                        <div class="report">
+                            <h1>DiabetesAI - Resumen de Prediccion</h1>
+                            <p class="muted">Generado el ${current.generatedAt.toLocaleString('es-ES')}</p>
+
+                            <div class="panel">
+                                <h2 style="margin:0 0 10px;font-size:18px;">Resultado</h2>
+                                <p style="margin:0 0 6px;"><strong>Estado:</strong> ${current.label}</p>
+                                <p style="margin:0 0 6px;"><strong>Probabilidad descontrolada:</strong> ${current.probPct}%</p>
+                                <p style="margin:0;"><strong>Probabilidad controlada:</strong> ${current.controlPct}%</p>
+                            </div>
+
+                            <div class="panel">
+                                <h2 style="margin:0 0 10px;font-size:18px;">Variables de Entrada</h2>
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Variable</th>
+                                            <th>Valor</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${current.inputs.map(item => `
+                                            <tr>
+                                                <td>${item.feature.label}</td>
+                                                <td>${formatFeatureValue(item.feature, item.value)}</td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="panel">
+                                <h2 style="margin:0 0 10px;font-size:18px;">Factores Clave</h2>
+                                <div style="font-size:14px;line-height:1.7;">${current.factors}</div>
+                            </div>
+
+                            <div class="note">
+                                Consejo: usa el botón "Guardar como PDF" de esta pestaña para crear el archivo.
+                            </div>
+                        </div>
+                    </div>
+                </body>
+                </html>
+            `;
+
+            const reportWindow = window.open('', '_blank');
+            if (!reportWindow) {
+                alert('El navegador bloqueo la nueva pestaña. Permite popups para exportar el PDF.');
+                return;
+            }
+
+            reportWindow.document.open();
+            reportWindow.document.write(reportHtml);
+            reportWindow.document.close();
+            reportWindow.focus();
         }
 
         // ============================================================
@@ -1012,26 +1404,41 @@
         function buildImportanceChart() {
             const container = document.getElementById('importance-chart');
             const sorted = [...MODEL.features].sort((a, b) => b.importance_pct - a.importance_pct);
-            const maxImp = sorted[0].importance_pct;
+            const risky = sorted.filter(f => f.coefficient > 0);
+            const protective = sorted.filter(f => f.coefficient < 0);
 
-            let html = '';
-            sorted.forEach(f => {
-                const width = (f.importance_pct / maxImp * 100).toFixed(1);
-                const isRisk = f.coefficient > 0;
-                html += `
-            <div class="importance-bar-container">
-                <div class="importance-label">
-                    <span>${f.label.split(' (')[0]}</span>
-                    <span>${f.importance_pct.toFixed(1)}% ${isRisk ? '(riesgo)' : '(protector)'}</span>
+            const renderSection = (items, title, subtitle, titleClass, fillClass) => {
+                const maxImp = items.length ? Math.max(...items.map(item => item.importance_pct)) : 1;
+                const bars = items.map(f => {
+                    const width = (f.importance_pct / maxImp * 100).toFixed(1);
+                    return `
+                <div class="importance-bar-container">
+                    <div class="importance-label">
+                        <span>${f.label.split(' (')[0]}</span>
+                        <span>${f.importance_pct.toFixed(1)}%</span>
+                    </div>
+                    <div class="importance-bar">
+                        <div class="importance-fill ${fillClass}" style="width: ${width}%"></div>
+                    </div>
                 </div>
-                <div class="importance-bar">
-                    <div class="importance-fill ${isRisk ? 'fill-risk' : 'fill-protect'}" style="width: ${width}%"></div>
+            `;
+                }).join('');
+
+                return `
+            <div class="importance-section">
+                <div class="importance-section-title ${titleClass}">
+                    <span>${title}</span>
+                    <span>${subtitle}</span>
                 </div>
+                ${bars || '<div style="font-size:0.8rem;color:var(--text2);">Sin variables en esta categoría</div>'}
             </div>
         `;
-            });
+            };
 
-            container.innerHTML = html;
+            container.innerHTML = [
+                renderSection(risky, 'Hacia el riesgo', 'Valores que empujan a descontrol', 'risk', 'fill-risk'),
+                renderSection(protective, 'Hacia la protección', 'Valores que empujan a mejor control', 'protect', 'fill-protect')
+            ].join('');
         }
 
         // ============================================================

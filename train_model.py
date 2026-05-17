@@ -145,6 +145,7 @@ for i in sorted_idx:
 # tengan los nombres tc, ldl, hdl, tch, ltg, glu.
 web_names = ['age', 'sex', 'bmi', 'bp', 'tc', 'ldl', 'hdl', 'tch', 'ltg', 'glu']
 
+
 feature_stats = []
 feature_labels = {
     'age': ('Edad', 'años', 'Edad del paciente'),

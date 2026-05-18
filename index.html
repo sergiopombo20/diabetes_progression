@@ -676,7 +676,7 @@
         <div class="header-content">
             <h1>DiabetesAI</h1>
             <p>Predictor de Progresion de Diabetes con Machine Learning</p>
-            <div class="badge">Modelo ML v1.0 &mdash; Open Source &mdash; 74.2% Accuracy</div>
+            <div class="badge" id="model-badge">Modelo ML v1.0 &mdash; Open Source &mdash; 74.2% Accuracy</div>
         </div>
     </div>
 
@@ -790,7 +790,7 @@
                         <strong>Target:</strong> Progresion > mediana (140.5) = Descontrolada<br>
                         <strong>Optimizacion:</strong> L-BFGS-B (scikit-learn)<br>
                         <strong>Regularizacion:</strong> L2 (C=1.0)<br>
-                        <strong>Test Accuracy:</strong> 74.2%<br>
+                        <strong>Test Accuracy:</strong> <span id="detail-accuracy">74.2%</span><br>
                         <strong>Implementacion:</strong> Scikit-Learn oficial
                     </div>
                 </div>
@@ -1137,151 +1137,100 @@
             }).join('<br>');
         }
 
-        // ==================== ADVISOR (Rule-based lightweight) ====================
+        // ==================== ADVISOR (Model-derived thresholds) ====================
         function generateAdvisor(payload) {
-            // Build advisor using explicit rules and thresholds provided by the user
             const vals = payload.values;
-            const get = name => {
-                const idx = MODEL.feature_names.indexOf(name);
-                return idx >= 0 ? vals[idx] : null;
-            };
-
-            const sex = get('sex'); // 0=Mujer, 1=Hombre per dataset
-            const ltg = get('ltg');
-            const hdl = get('hdl');
-            const ldl = get('ldl');
-            const tc = get('tc');
-            const bmi = get('bmi');
-            const age = get('age');
-            const bp = get('bp');
-            const glu = get('glu');
-            const tch = get('tch');
-
             const adv = [];
-            const prob = payload.probability; // prob of DESCONTROLADA
+            const prob = payload.probability;
             const controlPct = (1 - prob) * 100;
 
-            // Top single risk contributor (for short suggestions)
-            const contributions = MODEL.features.map((f, i) => {
-                const scaled = (vals[i] - MODEL.feature_mean[i]) / MODEL.feature_std[i];
-                return { name: f.name, label: f.label, contrib: MODEL.weights[i] * scaled, value: vals[i], unit: f.unit };
-            }).sort((a, b) => Math.abs(b.contrib) - Math.abs(a.contrib));
+            // Attach model statistics to each feature and compute z-score + contribution
+            const feats = MODEL.features.map((f, i) => {
+                const z = (vals[i] - MODEL.feature_mean[i]) / MODEL.feature_std[i];
+                return { ...f, value: vals[i], z, contrib: MODEL.weights[i] * z,
+                         mean: MODEL.feature_mean[i], std: MODEL.feature_std[i] };
+            });
+            const byContrib = [...feats].sort((a, b) => Math.abs(b.contrib) - Math.abs(a.contrib));
+            const topRisk = byContrib.find(c => c.contrib > 0) || byContrib[0];
+            const get = name => feats.find(f => f.name === name);
 
-            const topRisk = contributions.find(c => c.contrib > 0) || contributions[0];
+            // Thresholds in standard deviations from the model's training mean
+            const HI = 0.5, HI2 = 1.0, LO = -0.5;
 
-            // Overall tone
             if (controlPct > 60) {
                 adv.push(`<strong>¡Buen resultado!</strong> Predicción: control probable (${controlPct.toFixed(1)}%). Felicitaciones por mantener hábitos que protegen.`);
-                // Optionally give a short maintenance tip from top protective factor
-                if (topRisk && topRisk.contrib <= 0) {
+                if (topRisk && topRisk.contrib <= 0)
                     adv.push('Sugerencia para mantenerlo: continúe con su rutina actual y controles periódicos.');
-                }
                 adv.push('Estas recomendaciones son orientativas y no sustituyen una consulta médica.');
                 return adv.join('<br>');
             }
 
             if (controlPct >= 50 && controlPct <= 60) {
                 adv.push(`<strong>Resultado aceptable.</strong> Predicción: ${controlPct.toFixed(1)}% control. Bien, pero no se relaje.`);
-                // Provide one concrete correction based on top risk contributor
                 if (topRisk) {
-                    switch (topRisk.name) {
-                        case 'bmi':
-                            adv.push(`- IMC: ${topRisk.value} ${topRisk.unit} — considerar pérdida moderada de peso (5-10%) mediante dieta y ejercicio.`);
-                            break;
-                        case 'ltg':
-                            adv.push(`- Triglicéridos (log): ${topRisk.value} — reducir azúcares refinados, fructosa y alcohol.`);
-                            break;
-                        case 'bp':
-                            adv.push(`- Presión arterial: ${topRisk.value} ${topRisk.unit} — reducir sal y aumentar actividad física.`);
-                            break;
-                        case 'glu':
-                            adv.push(`- Glucosa en ayunas: ${topRisk.value} ${topRisk.unit} — vigilar carga glucémica de las comidas.`);
-                            break;
-                        case 'hdl':
-                            adv.push(`- HDL: ${topRisk.value} ${topRisk.unit} — actividad aeróbica y grasas saludables pueden ayudar.`);
-                            break;
-                        case 'ldl':
-                            adv.push(`- LDL: ${topRisk.value} ${topRisk.unit} — reducir grasas saturadas y aumentar fibra soluble.`);
-                            break;
-                        case 'tc':
-                            adv.push(`- Colesterol total: ${topRisk.value} ${topRisk.unit} — seguimiento con profesional para evaluar perfil lipídico.`);
-                            break;
-                        case 'tch':
-                            adv.push(`- Ratio TC/HDL: ${topRisk.value} — mantener dieta y actividad para mejorar el ratio.`);
-                            break;
-                        default:
-                            adv.push(`- Revisa ${topRisk.label}: ${topRisk.value} ${topRisk.unit}.`);
-                    }
+                    const f = topRisk;
+                    const tips = {
+                        bmi: `IMC ${f.value} ${f.unit} (media del modelo: ${f.mean.toFixed(1)}) — considerar pérdida moderada de peso mediante dieta y ejercicio.`,
+                        ltg: `Triglicéridos (log) ${f.value.toFixed(2)} (media del modelo: ${f.mean.toFixed(2)}) — reducir azúcares refinados, fructosa y alcohol.`,
+                        bp:  `Presión arterial ${f.value} ${f.unit} (media del modelo: ${f.mean.toFixed(0)}) — reducir sal y aumentar actividad física.`,
+                        glu: `Glucosa en ayunas ${f.value} ${f.unit} (media del modelo: ${f.mean.toFixed(0)}) — vigilar carga glucémica de las comidas.`,
+                        hdl: `HDL ${f.value} ${f.unit} (media del modelo: ${f.mean.toFixed(0)}) — actividad aeróbica y grasas saludables pueden ayudar.`,
+                        ldl: `LDL ${f.value} ${f.unit} (media del modelo: ${f.mean.toFixed(0)}) — reducir grasas saturadas y aumentar fibra soluble.`,
+                        tc:  `Colesterol total ${f.value} ${f.unit} (media del modelo: ${f.mean.toFixed(0)}) — revisar perfil lipídico con su médico.`,
+                        tch: `Ratio TC/HDL ${f.value} (media del modelo: ${f.mean.toFixed(1)}) — mantener dieta y actividad para mejorar el ratio.`,
+                    };
+                    adv.push('- ' + (tips[f.name] || `${f.label}: ${f.value} ${f.unit}.`));
                 }
                 adv.push('Consulte a su médico si tiene dudas.');
                 return adv.join('<br>');
             }
 
-            // If we get here, probability of DESCONTROLADA is >50% (malo)
-            adv.push('<strong>Riesgo de progresión descontrolada detectado.</strong> A continuación, observaciones y recomendaciones:');
+            adv.push('<strong>Riesgo de progresión descontrolada detectado.</strong> A continuación, observaciones basadas en los parámetros del modelo:');
 
-            // 1. Perfil lipídico
-            if (ltg != null && ltg > 4.6) {
-                adv.push('- Triglicéridos (log) > 4.6: Nivel de triglicéridos elevado. Se recomienda reducir el consumo de azúcares refinados, fructosa y alcohol, ya que impactan en la síntesis de grasas.');
-            }
+            const ltg = get('ltg'), hdl = get('hdl'), ldl = get('ldl'), tc = get('tc');
+            const bmi = get('bmi'), age = get('age'), bp = get('bp'), glu = get('glu'), tch = get('tch');
 
-            if (hdl != null) {
-                const hdlThreshold = (sex === 1) ? 40 : 50; // 1=Hombre
-                if (hdl < hdlThreshold) {
-                    adv.push(`- Colesterol HDL bajo (${hdl} ${MODEL.features.find(f=>f.name==='hdl').unit}). El ejercicio aeróbico regular y grasas saludables (aceite de oliva, aguacate) pueden ayudar a elevarlo.`);
-                }
-            }
+            if (ltg.z > HI)
+                adv.push(`- Triglicéridos (log) ${ltg.value.toFixed(2)} — por encima de la media del modelo (${ltg.mean.toFixed(2)}). Reducir azúcares refinados, fructosa y alcohol.`);
 
-            if (ldl != null && ldl > 130) {
-                adv.push('- Colesterol LDL > 130: LDL elevado. Limitar grasas saturadas y aumentar fibra soluble (avena, legumbres).');
-            }
+            if (hdl.z < LO)
+                adv.push(`- Colesterol HDL ${hdl.value} ${hdl.unit} — por debajo de la media del modelo (${hdl.mean.toFixed(0)} ${hdl.unit}). Ejercicio aeróbico y grasas saludables (aceite de oliva, aguacate) pueden ayudar.`);
 
-            if (tc != null && tc > 200) {
-                adv.push('- Colesterol total > 200: Colesterol total por encima del rango deseable. Hacer seguimiento con su médico para evaluar el perfil lipídico completo.');
-            }
+            if (ldl.z > HI)
+                adv.push(`- Colesterol LDL ${ldl.value} ${ldl.unit} — elevado respecto a la media del modelo (${ldl.mean.toFixed(0)} ${ldl.unit}). Limitar grasas saturadas y aumentar fibra soluble.`);
 
-            // 2. Composición corporal y edad
-            if (bmi != null && bmi > 30) {
-                adv.push('- IMC > 30: Obesidad detectada. El exceso de tejido adiposo promueve inflamación y resistencia a la insulina.');
-            } else if (bmi != null && bmi > 25) {
-                adv.push('- IMC > 25: Sobrepeso detectado. Una reducción moderada del 5-10% del peso corporal puede mejorar sens. a la insulina.');
-            }
+            if (tc.z > HI)
+                adv.push(`- Colesterol total ${tc.value} ${tc.unit} — por encima de la media del modelo (${tc.mean.toFixed(0)} ${tc.unit}). Revisar perfil lipídico completo con su médico.`);
 
-            if (age != null && age > 60) {
-                adv.push('- Edad > 60: Mantener masa muscular con ejercicios de fuerza suaves para mejorar control glucémico.');
-            }
+            if (bmi.z > HI2)
+                adv.push(`- IMC ${bmi.value} ${bmi.unit} — significativamente elevado respecto a la media del modelo (${bmi.mean.toFixed(1)} ${bmi.unit}). El tejido adiposo excesivo promueve inflamación y resistencia a la insulina.`);
+            else if (bmi.z > HI)
+                adv.push(`- IMC ${bmi.value} ${bmi.unit} — por encima de la media del modelo (${bmi.mean.toFixed(1)} ${bmi.unit}). Una reducción moderada de peso puede mejorar la sensibilidad a la insulina.`);
 
-            // 3. Presión arterial y glucosa
-            if (bp != null && bp > 130) {
-                adv.push('- Presión arterial > 130: Tensión arterial elevada. Reducir sodio (<2g/día) y aumentar potasio (frutas y verduras).');
-            }
+            if (age.z > HI)
+                adv.push(`- Edad ${age.value} años — por encima de la media del dataset (${age.mean.toFixed(0)} años). Mantener masa muscular con ejercicios de fuerza suaves mejora el control glucémico.`);
 
-            if (glu != null && glu > 125) {
-                adv.push('- Glucosa en ayunas > 125: Nivel compatible con diagnóstico clínico. Control riguroso de carbohidratos y medicación supervisada.');
-            } else if (glu != null && glu > 100) {
-                adv.push('- Glucosa en ayunas > 100: Prediabetes/hiperglucemia. Monitorizar carga glucémica de las comidas.');
-            }
+            if (bp.z > HI)
+                adv.push(`- Presión arterial ${bp.value} ${bp.unit} — elevada respecto a la media del modelo (${bp.mean.toFixed(0)} ${bp.unit}). Reducir sodio (<2 g/día) y aumentar potasio (frutas y verduras).`);
 
-            // 4. Ratios y combinaciones
-            if (tch != null && tch > 4.5) {
-                adv.push('- Ratio TC/HDL > 4.5: Ratio alto; mayor riesgo cardiovascular independientemente de valores individuales.');
-            }
+            if (glu.z > HI2)
+                adv.push(`- Glucosa en ayunas ${glu.value} ${glu.unit} — notablemente elevada respecto a la media del modelo (${glu.mean.toFixed(0)} ${glu.unit}). Control riguroso de carbohidratos y seguimiento médico.`);
+            else if (glu.z > HI)
+                adv.push(`- Glucosa en ayunas ${glu.value} ${glu.unit} — por encima de la media del modelo (${glu.mean.toFixed(0)} ${glu.unit}). Monitorizar carga glucémica de las comidas.`);
 
-            if (bmi != null && bmi > 25 && glu != null && glu > 100) {
-                adv.push('- Combinación: IMC alto + glucosa alta — riesgo potenciado de complicaciones vasculares.');
-            }
+            if (tch.z > HI)
+                adv.push(`- Ratio TC/HDL ${tch.value} — por encima de la media del modelo (${tch.mean.toFixed(1)}). Ratio elevado implica mayor riesgo cardiovascular.`);
 
-            if (bp != null && bp > 130 && age != null && age > 60) {
-                adv.push('- Combinación: Presión arterial alta + edad avanzada — riesgo aumentado de eventos hipertensivos. Monitorización domiciliaria recomendada.');
-            }
+            if (bmi.z > HI && glu.z > HI)
+                adv.push('- Combinación: IMC elevado + glucosa elevada — riesgo potenciado de complicaciones vasculares.');
 
-            // If no specific rules matched, still provide top contributors
-            if (adv.length === 1 && topRisk) {
-                adv.push(`- Factores principales identificados: ${topRisk.label} = ${topRisk.value} ${topRisk.unit}. Revise ese parámetro con su médico.`);
-            }
+            if (bp.z > HI && age.z > HI)
+                adv.push('- Combinación: presión arterial elevada + edad avanzada — monitorización domiciliaria recomendada.');
 
-            adv.push('Consulte con su profesional sanitario para obtener diagnóstico y tratamiento apropiado. Estas recomendaciones son orientativas.');
+            if (adv.length === 1 && topRisk)
+                adv.push(`- Factor principal identificado: ${topRisk.label} = ${topRisk.value} ${topRisk.unit}. Revise ese parámetro con su médico.`);
 
+            adv.push('Consulte con su profesional sanitario para diagnóstico y tratamiento apropiado. Estas recomendaciones son orientativas.');
             return adv.join('<br>');
         }
 
@@ -1635,6 +1584,10 @@
             document.getElementById('cm-tn').textContent = m.cm.tn;
             document.getElementById('cm-fp').textContent = m.cm.fp;
             document.getElementById('cm-fn').textContent = m.cm.fn;
+            const acc = (m.accuracy * 100).toFixed(1) + '%';
+            document.getElementById('detail-accuracy').textContent = acc;
+            document.getElementById('model-badge').textContent =
+                'Modelo ML v1.0 — Open Source — ' + acc + ' Accuracy';
         }
 
         // ============================================================

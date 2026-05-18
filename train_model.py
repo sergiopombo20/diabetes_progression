@@ -80,7 +80,7 @@ print(f"\n[3] Split (80/20): {len(X_train)} train / {len(X_test)} test (Estratif
 # =============================================================================
 print(f"\n[4] Entrenando modelo LogisticRegression (scikit-learn)...")
 # Usamos regularización L2 por defecto. random_state=42 para reproducibilidad total.
-model = LogisticRegression(penalty='l2', C=1.0, random_state=42, solver='lbfgs')
+model = LogisticRegression(C=1.0, random_state=42, solver='lbfgs')
 model.fit(X_train, y_train)
 
 # Extraemos los pesos y el sesgo del modelo entrenado

@@ -4,6 +4,9 @@ Proyecto final de la asignatura **Bioinformática y Medicina** del **Grado en In
 
 **Demo en vivo:** [diabetes-progression.vercel.app](https://diabetes-progression.vercel.app/)
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20276499.svg)](https://doi.org/10.5281/zenodo.20276499)
+![Version](https://img.shields.io/badge/version-v1.0.0-blue)
+
 ---
 
 ## Descripción
@@ -136,9 +139,13 @@ pip install scikit-learn numpy pandas matplotlib seaborn jupyter
 
 ---
 
-## Autor
+## Autores
 
-**Sergio Pombo** — Grado en Inteligencia Artificial, Universidade da Coruña
+- **Raúl Díaz**
+- **Sergio Pombo Cruz**
+- **Hugo Costoya Hurtado De Mendoza**
+
+Grado en Inteligencia Artificial, Universidade da Coruña
 
 ---
 
@@ -151,3 +158,11 @@ MIT License — proyecto de uso educativo.
 ## Referencia del dataset
 
 Efron, B., Hastie, T., Johnstone, I., & Tibshirani, R. (2004). *Least Angle Regression*. The Annals of Statistics, 32(2), 407–499.
+
+---
+
+## Citar este proyecto
+
+Si utilizas este proyecto, por favor cítalo como:
+
+> Díaz, R., Pombo Cruz, S., & Costoya Hurtado De Mendoza, H. (2025). *DiabetesAI — Predictor de Progresión de Diabetes* (v1.0.0). Zenodo. https://doi.org/10.5281/zenodo.20276499

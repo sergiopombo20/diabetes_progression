@@ -4,6 +4,8 @@ Proyecto final de la asignatura **Bioinformática y Medicina** del **Grado en In
 
 **Demo en vivo:** [diabetes-progression.vercel.app](https://diabetes-progression.vercel.app/)
 
+**Enlace a la presentación:** https://docs.google.com/presentation/d/1DpVPyeTn5p24f1r6RSigkySfalvLVWdQ/edit?usp=sharing&ouid=114657134545258152067&rtpof=true&sd=true
+
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20276499.svg)](https://doi.org/10.5281/zenodo.20276499)
 ![Version](https://img.shields.io/badge/version-v1.0.0-blue)
 
